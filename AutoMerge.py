@@ -17,6 +17,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
+import math
 import os
 from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty, CollectionProperty)
 from bpy_extras.io_utils import ExportHelper, path_reference_mode
@@ -232,7 +233,12 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
         for obj in targets:
             if merged == obj: continue
             select_object(obj, True)
-            bpy.ops.object.join()
+            if obj.data.use_auto_smooth == True:
+                # 子オブジェクトのuse_auto_smoothがtrueならAutoSmoothを有効化
+                merged.data.use_auto_smooth = True
+                merged.data.auto_smooth_angle = math.pi
+
+        bpy.ops.object.join()
     
     if modeTemp != None:
         # 開始時のモードを復元

@@ -92,6 +92,11 @@ def get_children(obj):
     allobjects=bpy.data.objects
     return [child for child in allobjects if child.parent == obj]
 
+def find_collection(name):
+    return next((c for c in bpy.context.scene.collection.children if name in c.name), None)
+def find_layer_collection(name):
+    return next((c for c in bpy.context.view_layer.layer_collection.children if name in c.name), None)
+
 def merge_children_recursive(self,
                              context,
                              obj,
@@ -281,10 +286,10 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
         print("xxxxxx Targets xxxxxx\n"+'\n'.join([obj.name for obj in bpy.context.selected_objects])+"\nxxxxxxxxxxxxxxx")
 
         # コレクションを取得
-        if not PARENTS_GROUP_NAME in bpy.context.scene.collection.children:
+        collection = find_collection(PARENTS_GROUP_NAME)
+        if not collection:
             # コレクションがなかったら処理中断
             return
-        collection = bpy.context.scene.collection.children[PARENTS_GROUP_NAME]
         if not collection.name in bpy.context.scene.collection.children.keys():
             # コレクションをLinkする。
             # Unlink状態のコレクションでもPythonからは参照できてしまう場合があるようなので、確実にLink状態になるようにしておく
@@ -374,21 +379,20 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
 
 # 選択オブジェクトを指定名のグループに入れたり外したり
 def assign_object_group(group_name, assign=True):
-    if not group_name in bpy.context.scene.collection.children:
-        if assign==True:
+    collection = find_collection(group_name)
+    if not collection:
+        if assign == True:
             # コレクションが存在しなければ新規作成
-            collection = bpy.context.scene.collection.children.new(name=group_name)
-            #bpy.context.scene.collection.children.link(collection)
+            collection = bpy.data.collections.new(name=group_name)
+            bpy.context.scene.collection.children.link(collection)
         else:
             # コレクションが存在せず、割り当てがfalseなら何もせず終了
             return
-    else:
-        collection = bpy.context.scene.collection.children[group_name]
 
-    if not collection.name in bpy.context.scene.collection.children.keys():
+    # if not collection.name in bpy.context.scene.collection.children.keys():
         # コレクションをLinkする。
         # Unlink状態のコレクションでもPythonからは参照できてしまう場合があるようなので、確実にLink状態になるようにしておく
-        bpy.context.scene.collection.children.link(collection)
+        # bpy.context.scene.collection.children.link(collection)
 
     active = get_active_object()
     targets = bpy.context.selected_objects
@@ -411,8 +415,8 @@ def assign_object_group(group_name, assign=True):
     set_active_object(active)
 
 def hide_collection(context, group_name, hide=True):
-    if group_name in context.view_layer.layer_collection.children:
-        layer_col = context.view_layer.layer_collection.children[group_name]
+    layer_col = find_layer_collection(group_name)
+    if layer_col:
         layer_col.hide_viewport = hide
 ### endregion ###
 

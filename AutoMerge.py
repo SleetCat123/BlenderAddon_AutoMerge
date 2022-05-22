@@ -281,10 +281,10 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
         print("xxxxxx Targets xxxxxx\n"+'\n'.join([obj.name for obj in bpy.context.selected_objects])+"\nxxxxxxxxxxxxxxx")
 
         # コレクションを取得
-        if not PARENTS_GROUP_NAME in bpy.data.collections:
+        if not PARENTS_GROUP_NAME in bpy.context.scene.collection.children:
             # コレクションがなかったら処理中断
             return
-        collection = bpy.data.collections[PARENTS_GROUP_NAME]
+        collection = bpy.context.scene.collection.children[PARENTS_GROUP_NAME]
         if not collection.name in bpy.context.scene.collection.children.keys():
             # コレクションをLinkする。
             # Unlink状態のコレクションでもPythonからは参照できてしまう場合があるようなので、確実にLink状態になるようにしておく
@@ -374,16 +374,16 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
 
 # 選択オブジェクトを指定名のグループに入れたり外したり
 def assign_object_group(group_name, assign=True):
-    if not group_name in bpy.data.collections:
+    if not group_name in bpy.context.scene.collection.children:
         if assign==True:
             # コレクションが存在しなければ新規作成
-            collection = bpy.data.collections.new(name=group_name)
+            collection = bpy.context.scene.collection.children.new(name=group_name)
             #bpy.context.scene.collection.children.link(collection)
         else:
             # コレクションが存在せず、割り当てがfalseなら何もせず終了
             return
     else:
-        collection = bpy.data.collections[group_name]
+        collection = bpy.context.scene.collection.children[group_name]
 
     if not collection.name in bpy.context.scene.collection.children.keys():
         # コレクションをLinkする。

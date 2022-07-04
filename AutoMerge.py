@@ -428,7 +428,7 @@ def shapekey_util_is_found():
     except ImportError:
         t="!!! Failed to load ShapeKeysUtil !!! - on shapekey_util_is_found"
         print(t)
-        self.report({'ERROR'}, t)
+        #self.report({'ERROR'}, t)
     return False
 
 def shapekey_util_label(layout):

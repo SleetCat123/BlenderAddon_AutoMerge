@@ -33,7 +33,8 @@ bl_info = {
 }
 
 PARENTS_GROUP_NAME = "MergeGroup" # マージ先となるオブジェクトが属するグループの名前
-APPLY_AS_SHAPEKEY_NAME="%AS%" # モディファイア名が%AS%で始まっているならApply as shapekey
+APPLY_AS_SHAPEKEY_NAME = "%AS%" # モディファイア名が%AS%で始まっているならApply as shapekey
+FORCE_APPLY_MODIFIER_PREFIX = "%A%" # モディファイア名が"%A%"で始まっているならArmatureなどの対象外モディファイアでも強制的に適用
 
 ### region Func ###
 def select_object(obj, value=True):
@@ -180,7 +181,7 @@ def apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys):
                         print("Apply as shapekey: [{0}]".format(modifier.name))
                     except UnicodeDecodeError:
                         print("Apply as shapekey")
-            elif modifier.name.startswith("%A%") or modifier.type != 'ARMATURE':
+            elif modifier.name.startswith(FORCE_APPLY_MODIFIER_PREFIX) or modifier.type != 'ARMATURE':
                 # モディファイアが処理対象モディファイアなら
                 # または、モディファイアの名前欄が%A%で始まっているなら
                 try:
@@ -198,7 +199,7 @@ def apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys):
 
 def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_with_shapekeys, apply_parentobj_modifier = False, ignore_armature=False):
     modeTemp = None
-    if bpy.context.object != None:
+    if bpy.context.object is not None:
         # 開始時のモードを記憶しオブジェクトモードに
         modeTemp = bpy.context.object.mode
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -238,20 +239,22 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
         for obj in targets:
             if merged == obj: continue
             select_object(obj, True)
-            if obj.data.use_auto_smooth == True:
+            if obj.data.use_auto_smooth:
                 # 子オブジェクトのuse_auto_smoothがtrueならAutoSmoothを有効化
                 merged.data.use_auto_smooth = True
                 merged.data.auto_smooth_angle = math.pi
 
         bpy.ops.object.join()
     
-    if modeTemp != None:
+    if modeTemp is not None:
         # 開始時のモードを復元
         bpy.ops.object.mode_set(mode=modeTemp)
     return True
 
+
 def deselect_collection(collection):
-    if collection==None: return
+    if collection is None:
+        return
     print("Deselect Collection: " + collection.name)
     active=get_active_object()
     targets = bpy.context.selected_objects
@@ -276,7 +279,7 @@ def deselect_collection(collection):
             print("Deselect: "+child.name)
     deselect_all_objects()
     select_objects(targets, True)
-    if active!=None:
+    if active is not None:
         set_active_object(active)
 
 def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, enable_apply_modifiers_with_shapekeys, duplicate, apply_parentobj_modifier = False, ignore_armature=False):
@@ -296,7 +299,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
             bpy.context.scene.collection.children.link(collection)
         
         modeTemp = None
-        if bpy.context.object != None:
+        if bpy.context.object is not None:
             # 開始時のモードを記憶しオブジェクトモードに
             modeTemp = bpy.context.object.mode
             bpy.ops.object.mode_set(mode='OBJECT')
@@ -328,7 +331,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
             while True:
                 parent = parent.parent
                 print(parent)
-                if parent == None:
+                if parent is None:
                     print("root:"+merge_root_parent.name)
                     roots.add(merge_root_parent)
                     break
@@ -369,7 +372,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
         deselect_all_objects()
         select_objects(results, True)
         
-        if modeTemp != None:
+        if modeTemp is not None:
             # 開始時のモードを復元
             bpy.ops.object.mode_set(mode=modeTemp)
 
@@ -540,7 +543,7 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
             while True:
                 parent = parent.parent
                 print(parent)
-                if parent == None:
+                if parent is None:
                     # 親以上のオブジェクトに選択中オブジェクトが存在しなければ、そのオブジェクトはrootとなる
                     root_objects.append(obj)
                     break

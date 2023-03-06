@@ -54,7 +54,7 @@ def deselect_all_objects():
     #bpy.context.view_layer.objects.active = None
 
 def get_addon_prefs():
-    return bpy.context.preferences.addons[__name__].preferences
+    return bpy.context.preferences.addons[__package__].preferences
 ### endregion ###
 
 ### region Translation ###
@@ -123,7 +123,7 @@ def duplicate_selected_objects():
     # 対象オブジェクトを複製
     bpy.ops.object.duplicate()
     dup_result = bpy.context.selected_objects
-    
+
     return (dup_source, dup_result)
 
 def apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys):
@@ -193,13 +193,13 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
         # 開始時のモードを記憶しオブジェクトモードに
         modeTemp = bpy.context.object.mode
         bpy.ops.object.mode_set(mode='OBJECT')
-    
+
     merged = get_active_object()
     targets = bpy.context.selected_objects
-    
+
     if apply_parentobj_modifier==False:
         targets.remove(merged)
-    
+
     # リンクされたオブジェクトのモディファイアは適用できないので予めリンクを解除しておく
     bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, animation=False)
 
@@ -218,7 +218,7 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
         #    deselect_all_objects()
         #    set_active_object(obj)
         #    bpy.ops.object.delete()
-    
+
     # オブジェクトを結合
     deselect_all_objects()
     select_object(merged, True)
@@ -235,7 +235,7 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
                 merged.data.auto_smooth_angle = math.pi
 
         bpy.ops.object.join()
-    
+
     if modeTemp is not None:
         # 開始時のモードを復元
         bpy.ops.object.mode_set(mode=modeTemp)
@@ -287,13 +287,13 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
             # コレクションをLinkする。
             # Unlink状態のコレクションでもPythonからは参照できてしまう場合があるようなので、確実にLink状態になるようにしておく
             bpy.context.scene.collection.children.link(collection)
-        
+
         modeTemp = None
         if bpy.context.object is not None:
             # 開始時のモードを記憶しオブジェクトモードに
             modeTemp = bpy.context.object.mode
             bpy.ops.object.mode_set(mode='OBJECT')
-        
+
         dup_source_parents = []
         dup_result_parents = []
 
@@ -361,13 +361,13 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
         # 選択を復元
         deselect_all_objects()
         select_objects(results, True)
-        
+
         if modeTemp is not None:
             # 開始時のモードを復元
             bpy.ops.object.mode_set(mode=modeTemp)
 
         #layer_col.exclude = True
-        
+
         return (dup_source_parents, dup_result_parents)
 
 # 選択オブジェクトを指定名のグループに入れたり外したり
@@ -442,13 +442,13 @@ def box_warning_read_pref(layout):
 
 ### AddonPreferences ###
 class addon_preferences(bpy.types.AddonPreferences):
-    bl_idname = __name__
-    
+    bl_idname = __package__
+
     enable_apply_modifiers_with_shapekeys : BoolProperty(name="Apply Modifier with Shape Keys", default=True)
 
     def draw(self, context):
         layout = self.layout
-        
+
         # ShapekeysUtil
         box = layout.box()
         if shapekey_util_is_found()==True:
@@ -462,11 +462,11 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
     bl_label = "Merge Grouped Children"
     bl_description = "選択中のオブジェクトのうち、\nオブジェクトグループ“MergeGroup”に属するものに対し、それぞれ子階層以下にあるオブジェクトをマージします"
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     duplicate : BoolProperty(name="Duplicate", default=False)
     apply_parentobj_modifier : bpy.props.BoolProperty(name="Apply Parent Object Modifiers", default=True)
     ignore_armature : bpy.props.BoolProperty(name="Ignore Armature", default=True)
-    
+
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "duplicate")
@@ -482,7 +482,7 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
             col.enabled = False
             addon_prefs = get_addon_prefs()
             col.prop(addon_prefs, "enable_apply_modifiers_with_shapekeys")
-    
+
     def execute(self, context):
         addon_prefs = get_addon_prefs()
         b = apply_modifier_and_merge_children_grouped(
@@ -498,11 +498,11 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
     bl_label = "Merge Children"
     bl_description = "最後に選択したオブジェクトに対し、\nその子階層以下にあるオブジェクトをマージします"
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     duplicate : BoolProperty(name="Duplicate", default=False)
     apply_parentobj_modifier : bpy.props.BoolProperty(name="Apply Parent Object Modifiers", default=True)
     ignore_armature : bpy.props.BoolProperty(name="Ignore Armature", default=True)
-    
+
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "duplicate")
@@ -518,7 +518,7 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
             col.enabled = False
             addon_prefs = get_addon_prefs()
             col.prop(addon_prefs, "enable_apply_modifiers_with_shapekeys")
-    
+
     def execute(self, context):
         print("apply_modifier_and_merge_children")
 
@@ -560,11 +560,11 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
     bl_label = "Merge Selections"
     bl_description = "最後に選択したオブジェクトに対し、\n選択中の他オブジェクトをマージします"
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     duplicate : bpy.props.BoolProperty(name="Duplicate", default=False)
     apply_parentobj_modifier : bpy.props.BoolProperty(name="Apply Parent Object Modifiers", default=True)
     ignore_armature : bpy.props.BoolProperty(name="Ignore Armature", default=True)
-    
+
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "duplicate")
@@ -580,12 +580,12 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
             col.enabled = False
             addon_prefs = get_addon_prefs()
             col.prop(addon_prefs, "enable_apply_modifiers_with_shapekeys")
-    
+
     def execute(self, context):
         if self.duplicate == True:
             # 対象オブジェクトを複製
             duplicate_selected_objects()
-        
+
         addon_prefs = get_addon_prefs()
         b = apply_modifier_and_merge_selections(self, context, addon_prefs.enable_apply_modifiers_with_shapekeys, self.apply_parentobj_modifier, self.ignore_armature)
         if b==True:
@@ -599,9 +599,9 @@ class OBJECT_OT_specials_assign_merge_group(bpy.types.Operator):
     bl_label = "Assign Merge Group"
     bl_description = "選択中のオブジェクトを\nオブジェクトグループ“"+PARENTS_GROUP_NAME+"”に入れたり外したりします"
     bl_options = {'REGISTER', 'UNDO'}
-    
+
     assign : bpy.props.BoolProperty(name="Assign", default=True)
-    
+
     def execute(self, context):
         assign_object_group(group_name=PARENTS_GROUP_NAME, assign=self.assign)
         #exclude_collection(context=context, group_name=PARENTS_GROUP_NAME, exclude=True)
@@ -617,7 +617,7 @@ def INFO_MT_object_specials_auto_merge_menu(self, context):
 class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
     bl_label = "Auto Merge"
     bl_idname = "VIEW3D_MT_object_specials_auto_merge"
-    
+
     def draw(self, context):
         self.layout.operator(OBJECT_OT_specials_merge_children.bl_idname)
         self.layout.operator(OBJECT_OT_specials_merge_children_grouped.bl_idname)
@@ -628,11 +628,11 @@ class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
 ### Init ###
 classes = [
     VIEW3D_MT_object_specials_auto_merge,
-    
+
     OBJECT_OT_specials_merge_children_grouped,
     OBJECT_OT_specials_merge_children,
     OBJECT_OT_specials_merge_selections,
-    
+
     OBJECT_OT_specials_assign_merge_group,
 
     addon_preferences,
@@ -642,7 +642,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.app.translations.register(__name__, translations_dict)
+    bpy.app.translations.register(__package__, translations_dict)
 
     bpy.types.VIEW3D_MT_object_context_menu.append(INFO_MT_object_specials_auto_merge_menu)
 
@@ -650,9 +650,6 @@ def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    bpy.app.translations.unregister(__name__)
+    bpy.app.translations.unregister(__package__)
 
     bpy.types.VIEW3D_MT_object_context_menu.remove(INFO_MT_object_specials_auto_merge_menu)
-
-if __name__ == "__main__":
-    register()

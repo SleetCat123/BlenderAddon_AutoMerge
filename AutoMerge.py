@@ -205,6 +205,7 @@ def apply_modifiers(self, enable_apply_modifiers_with_shapekeys):
                         print("Apply: [{0}]".format(modifier.name))
                     except UnicodeDecodeError:
                         print("Apply")
+    return True
 
 
 def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_with_shapekeys,

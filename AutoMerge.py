@@ -148,11 +148,11 @@ def apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys):
     if obj.data.shape_keys and len(obj.data.shape_keys.key_blocks) != 0:
         # オブジェクトにシェイプキーがあったら
         succeed_import = False
-        if enable_apply_modifiers_with_shapekeys == True:
+        if enable_apply_modifiers_with_shapekeys:
             try:
                 # ShapeKeysUtil連携
                 # ShapeKeysUtilが導入されていたらシェイプキーつきオブジェクトでもモディファイア適用
-                from ShapeKeysUtil import apply_modifiers_with_shapekeys_for_automerge_addon
+                from BlenderAddon_ShapeKeysUtil.link_with_automerge import apply_modifiers_with_shapekeys_for_automerge_addon
                 succeed_import = True
                 b = apply_modifiers_with_shapekeys_for_automerge_addon(self, obj)
                 if b == False:
@@ -443,7 +443,7 @@ def hide_collection(context, group_name, hide=True):
 ### region ShapeKeysUtil連携 ###
 def shapekey_util_is_found():
     try:
-        from ShapeKeysUtil import apply_modifiers_with_shapekeys
+        from BlenderAddon_ShapeKeysUtil.link_with_automerge import apply_modifiers_with_shapekeys_for_automerge_addon
         return True
     except ImportError:
         t = "!!! Failed to load ShapeKeysUtil !!! - on shapekey_util_is_found"

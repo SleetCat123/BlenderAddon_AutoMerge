@@ -109,7 +109,7 @@ def merge_children_recursive(self,
                              ignore_armature=True,
                              ):
     # obj.hide_set(False)
-    if obj.hide_get() == True:
+    if obj.hide_get():
         return True
 
     children = get_children(obj)
@@ -117,7 +117,7 @@ def merge_children_recursive(self,
         # print("call:"+child.name)
         b = merge_children_recursive(self, context, child, enable_apply_modifiers_with_shapekeys,
                                      apply_parentobj_modifier, ignore_armature)
-        if b == False:
+        if not b:
             # 処理に失敗したら中断
             print("!!! Failed - merge_children_recursive A")
             return False
@@ -129,9 +129,9 @@ def merge_children_recursive(self,
     print("merge:" + obj.name)
     b = apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_with_shapekeys,
                                             apply_parentobj_modifier, ignore_armature)
-    if b == False:
+    if not b:
         print("!!! Failed - merge_children_recursive B")
-    return b != False
+    return b
 
 
 def duplicate_selected_objects():
@@ -140,7 +140,7 @@ def duplicate_selected_objects():
     bpy.ops.object.duplicate()
     dup_result = bpy.context.selected_objects
 
-    return (dup_source, dup_result)
+    return dup_source, dup_result
 
 
 def apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys):
@@ -152,10 +152,11 @@ def apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys):
             try:
                 # ShapeKeysUtil連携
                 # ShapeKeysUtilが導入されていたらシェイプキーつきオブジェクトでもモディファイア適用
-                from BlenderAddon_ShapeKeysUtil.link_with_automerge import apply_modifiers_with_shapekeys_for_automerge_addon
+                from BlenderAddon_ShapeKeysUtil.link_with_automerge import \
+                    apply_modifiers_with_shapekeys_for_automerge_addon
                 succeed_import = True
                 b = apply_modifiers_with_shapekeys_for_automerge_addon(self, obj)
-                if b == False:
+                if not b:
                     return False
             except ImportError:
                 t = "!!! Failed to load ShapeKeysUtil !!! - on apply modifier"
@@ -167,7 +168,7 @@ def apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys):
             self.report({'INFO'}, "[" + obj.name + "] has shape key. apply modifier was skipped.")
     else:
         for modifier in obj.modifiers:
-            if modifier.show_render == False:
+            if not modifier.show_render:
                 # モディファイアがレンダリング対象ではない（モディファイア一覧のカメラアイコンが押されていない）なら無視
                 continue
             if modifier.name.startswith(APPLY_AS_SHAPEKEY_NAME):
@@ -216,7 +217,7 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
     merged = get_active_object()
     targets = bpy.context.selected_objects
 
-    if apply_parentobj_modifier == False:
+    if not apply_parentobj_modifier:
         targets.remove(merged)
 
     # リンクされたオブジェクトのモディファイアは適用できないので予めリンクを解除しておく
@@ -229,7 +230,7 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
             select_object(merged, True)
             set_active_object(obj)
             b = apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys)
-            if b == False:
+            if not b:
                 return False
 
         # else:
@@ -305,7 +306,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
     if not collection:
         # コレクションがなかったら処理中断
         return
-    if not collection.name in bpy.context.scene.collection.children.keys():
+    if collection.name not in bpy.context.scene.collection.children.keys():
         # コレクションをLinkする。
         # Unlink状態のコレクションでもPythonからは参照できてしまう場合があるようなので、確実にLink状態になるようにしておく
         bpy.context.scene.collection.children.link(collection)
@@ -334,7 +335,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
     i = -1
     for obj in merge_targets:
         i += 1
-        if is_parent_list[i] == True:
+        if is_parent_list[i]:
             # 既にルートではないことが確定しているオブジェクトは処理スキップ
             continue
         merge_root_parent = obj
@@ -363,7 +364,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
         # 処理から除外するオブジェクトの選択を外す
         deselect_collection(ignore_collection)
 
-        if duplicate == True:
+        if duplicate:
             dup_source_parents.append(merge_root_parent)
             # 対象オブジェクトを複製
             duplicate_selected_objects()
@@ -373,7 +374,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
         # 子を再帰的にマージ
         b = merge_children_recursive(self, context, active, enable_apply_modifiers_with_shapekeys,
                                      apply_parentobj_modifier=True, ignore_armature=True)
-        if b == False:
+        if not b:
             # 処理に失敗したら中断
             return False
 
@@ -391,14 +392,14 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
 
     # layer_col.exclude = True
 
-    return (dup_source_parents, dup_result_parents)
+    return dup_source_parents, dup_result_parents
 
 
 # 選択オブジェクトを指定名のグループに入れたり外したり
 def assign_object_group(group_name, assign=True):
     collection = find_collection(group_name)
     if not collection:
-        if assign == True:
+        if assign:
             # コレクションが存在しなければ新規作成
             collection = bpy.data.collections.new(name=group_name)
             bpy.context.scene.collection.children.link(collection)
@@ -414,9 +415,9 @@ def assign_object_group(group_name, assign=True):
     active = get_active_object()
     targets = bpy.context.selected_objects
     for obj in targets:
-        if assign == True:
+        if assign:
             set_active_object(obj)
-            if not obj.name in collection.objects:
+            if obj.name not in collection.objects:
                 # コレクションに追加
                 collection.objects.link(obj)
         else:
@@ -424,7 +425,7 @@ def assign_object_group(group_name, assign=True):
                 # コレクションから外す
                 collection.objects.unlink(obj)
 
-    if collection.objects == False:
+    if not collection.objects:
         # コレクションが空なら削除する
         bpy.context.scene.collection.children.unlink(collection)
 
@@ -483,7 +484,7 @@ class addon_preferences(bpy.types.AddonPreferences):
 
         # ShapekeysUtil
         box = layout.box()
-        if shapekey_util_is_found() == True:
+        if shapekey_util_is_found():
             box.label(text='AutoMerge - ShapeKey Utils')
             box_warning_slow_method(box)
             box.prop(self, "enable_apply_modifiers_with_shapekeys")
@@ -505,7 +506,7 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
         layout.prop(self, "duplicate")
         layout.prop(self, "apply_parentobj_modifier")
         layout.prop(self, "ignore_armature")
-        if shapekey_util_is_found() == True:
+        if shapekey_util_is_found():
             layout.separator()
             box = layout.box()
             shapekey_util_label(box)
@@ -522,10 +523,10 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
             self, context, None, addon_prefs.enable_apply_modifiers_with_shapekeys,
             duplicate=self.duplicate, apply_parentobj_modifier=self.apply_parentobj_modifier,
             ignore_armature=self.ignore_armature)
-        if b == False:
-            return {'CANCELLED'}
-        else:
+        if b:
             return {'FINISHED'}
+        else:
+            return {'CANCELLED'}
 
 
 class OBJECT_OT_specials_merge_children(bpy.types.Operator):
@@ -543,7 +544,7 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         layout.prop(self, "duplicate")
         layout.prop(self, "apply_parentobj_modifier")
         layout.prop(self, "ignore_armature")
-        if shapekey_util_is_found() == True:
+        if shapekey_util_is_found():
             layout.separator()
             box = layout.box()
             shapekey_util_label(box)
@@ -579,13 +580,13 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         # 結合処理
         addon_prefs = get_addon_prefs()
         for obj in root_objects:
-            if self.duplicate == True:
+            if self.duplicate:
                 # 対象オブジェクトを複製
                 duplicate_selected_objects()
 
             b = merge_children_recursive(self, context, obj, addon_prefs.enable_apply_modifiers_with_shapekeys,
                                          self.apply_parentobj_modifier, self.ignore_armature)
-            if b == False:
+            if not b:
                 return {'CANCELLED'}
 
         select_objects(root_objects, True)
@@ -607,7 +608,7 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
         layout.prop(self, "duplicate")
         layout.prop(self, "apply_parentobj_modifier")
         layout.prop(self, "ignore_armature")
-        if shapekey_util_is_found() == True:
+        if shapekey_util_is_found():
             layout.separator()
             box = layout.box()
             shapekey_util_label(box)
@@ -619,14 +620,14 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
             col.prop(addon_prefs, "enable_apply_modifiers_with_shapekeys")
 
     def execute(self, context):
-        if self.duplicate == True:
+        if self.duplicate:
             # 対象オブジェクトを複製
             duplicate_selected_objects()
 
         addon_prefs = get_addon_prefs()
         b = apply_modifier_and_merge_selections(self, context, addon_prefs.enable_apply_modifiers_with_shapekeys,
                                                 self.apply_parentobj_modifier, self.ignore_armature)
-        if b == True:
+        if b:
             return {'FINISHED'}
         else:
             return {'CANCELLED'}

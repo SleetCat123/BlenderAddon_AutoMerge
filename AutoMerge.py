@@ -153,13 +153,11 @@ def apply_modifiers(self, enable_apply_modifiers_with_shapekeys):
             try:
                 # ShapeKeysUtil連携
                 # ShapeKeysUtilが導入されていたらシェイプキーつきオブジェクトでもモディファイア適用
-                from BlenderAddon_ShapeKeysUtil.link_with_automerge import \
-                    apply_modifiers_with_shapekeys_for_automerge_addon
+                b = bpy.ops.object.shapekeys_util_apply_mod_with_shapekeys_automerge()
                 succeed_import = True
-                b = apply_modifiers_with_shapekeys_for_automerge_addon(self, obj)
-                if not b:
+                if 'FINISHED' not in b:
                     return False
-            except ImportError:
+            except AttributeError:
                 t = "!!! Failed to load ShapeKeysUtil !!! - on apply modifier"
                 print(t)
                 self.report({'ERROR'}, t)
@@ -446,13 +444,13 @@ def hide_collection(context, group_name, hide=True):
 ### region ShapeKeysUtil連携 ###
 def shapekey_util_is_found():
     try:
-        from BlenderAddon_ShapeKeysUtil.link_with_automerge import apply_modifiers_with_shapekeys_for_automerge_addon
-        return True
-    except ImportError:
-        t = "!!! Failed to load ShapeKeysUtil !!! - on shapekey_util_is_found"
-        print(t)
+        return hasattr(bpy.types, bpy.ops.object.shapekeys_util_apply_mod_with_shapekeys_automerge.idname())
+    except AttributeError:
+        # print(str(e))
+        # t = "!!! Failed to load ShapeKeysUtil !!! - on shapekey_util_is_found"
+        # print(t)
         # self.report({'ERROR'}, t)
-    return False
+        return False
 
 
 def shapekey_util_label(layout):

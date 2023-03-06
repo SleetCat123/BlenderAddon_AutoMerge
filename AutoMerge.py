@@ -22,16 +22,6 @@ import os
 from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty, CollectionProperty)
 from bpy_extras.io_utils import ExportHelper, path_reference_mode
 
-bl_info = {
-    "name" : "AutoMerge",
-    "author" : "@sleetcat123(Twitter)",
-    "version" : (2,2,0),
-    "blender" : (2, 80, 0),
-    "location": "",
-    "description" : "Merge Objects.",
-    "category" : "Objects"
-}
-
 PARENTS_GROUP_NAME = "MergeGroup" # マージ先となるオブジェクトが属するグループの名前
 APPLY_AS_SHAPEKEY_NAME = "%AS%" # モディファイア名が%AS%で始まっているならApply as shapekey
 FORCE_APPLY_MODIFIER_PREFIX = "%A%" # モディファイア名が"%A%"で始まっているならArmatureなどの対象外モディファイアでも強制的に適用

@@ -143,7 +143,8 @@ def duplicate_selected_objects():
     return dup_source, dup_result
 
 
-def apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys):
+def apply_modifiers(self, enable_apply_modifiers_with_shapekeys):
+    obj = get_active_object()
     # オブジェクトのモディファイアを適用
     if obj.data.shape_keys and len(obj.data.shape_keys.key_blocks) != 0:
         # オブジェクトにシェイプキーがあったら
@@ -179,7 +180,7 @@ def apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys):
                     # Apply As Shape
                     bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=modifier.name)
                     # シェイプキーが追加された影響で通常のApply Modifierが動作しなくなるので関数をリスタート
-                    return apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys)
+                    return apply_modifiers(self, enable_apply_modifiers_with_shapekeys)
                 except RuntimeError:
                     # 無効なModifier（対象オブジェクトが指定されていないなどの状態）は適用しない
                     print("!!! Apply as shapekey failed !!!: [{0}]".format(modifier.name))
@@ -229,7 +230,7 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
             deselect_all_objects()
             select_object(merged, True)
             set_active_object(obj)
-            b = apply_modifiers(self, obj, enable_apply_modifiers_with_shapekeys)
+            b = apply_modifiers(self, enable_apply_modifiers_with_shapekeys)
             if not b:
                 return False
 

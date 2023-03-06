@@ -446,10 +446,6 @@ def shapekey_util_is_found():
     try:
         return hasattr(bpy.types, bpy.ops.object.shapekeys_util_apply_mod_with_shapekeys_automerge.idname())
     except AttributeError:
-        # print(str(e))
-        # t = "!!! Failed to load ShapeKeysUtil !!! - on shapekey_util_is_found"
-        # print(t)
-        # self.report({'ERROR'}, t)
         return False
 
 
@@ -689,6 +685,7 @@ def register():
     bpy.app.translations.register(__package__, translations_dict)
 
     bpy.types.VIEW3D_MT_object_context_menu.append(INFO_MT_object_specials_auto_merge_menu)
+    bpy.types.WindowManager.mizore_automerge_collection_name = bpy.props.StringProperty(PARENTS_GROUP_NAME)
 
 
 def unregister():
@@ -698,3 +695,4 @@ def unregister():
     bpy.app.translations.unregister(__package__)
 
     bpy.types.VIEW3D_MT_object_context_menu.remove(INFO_MT_object_specials_auto_merge_menu)
+    del bpy.types.WindowManager.mizore_automerge_collection_name

@@ -29,10 +29,10 @@ FORCE_APPLY_MODIFIER_PREFIX = "%A%"  # モディファイア名が"%A%"で始ま
 
 ### region Func ###
 def select_object(obj, value=True):
-    # try:
+    #try:
     obj.select_set(value)
-    # except ReferenceError:
-    #     print("removed")
+    #except RuntimeError:
+    #    print("!!! Failed to select " + obj.name)
 
 
 def select_objects(objects, value=True):
@@ -88,9 +88,13 @@ translations_dict = {
 ### endregion ###
 
 ### region Func ###
-def get_children(obj):
-    allobjects = bpy.data.objects
-    return [child for child in allobjects if child.parent == obj]
+def get_children(obj, only_current_view_layer: bool):
+    all_objects = bpy.data.objects
+    if only_current_view_layer:
+        return [child for child in all_objects if
+                child.parent == obj and child.name in bpy.context.window.view_layer.objects.keys()]
+    else:
+        return [child for child in all_objects if child.parent == obj]
 
 
 def find_collection(name):
@@ -112,7 +116,7 @@ def merge_children_recursive(self,
     if obj.hide_get():
         return True
 
-    children = get_children(obj)
+    children = get_children(obj, only_current_view_layer=True)
     for child in children:
         # print("call:"+child.name)
         b = merge_children_recursive(self, context, child, enable_apply_modifiers_with_shapekeys,
@@ -121,6 +125,8 @@ def merge_children_recursive(self,
             # 処理に失敗したら中断
             print("!!! Failed - merge_children_recursive A")
             return False
+    # EMPTYをメッシュに変換した場合など、オブジェクトが消えていることがあるため再取得
+    children = get_children(obj, only_current_view_layer=True)
 
     deselect_all_objects()
     select_objects(children, True)
@@ -215,7 +221,54 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
         bpy.ops.object.mode_set(mode='OBJECT')
 
     merged = get_active_object()
+    select_object(merged, True)
     targets = bpy.context.selected_objects
+
+    for i, obj in enumerate(targets):
+        if obj.type == 'CURVE' or obj.type == 'SURFACE' or obj.type == 'META' or obj.type == 'FONT':
+            deselect_all_objects()
+
+            children = get_children(obj, only_current_view_layer=False)
+            select_objects(children, True)
+            bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
+            select_objects(children, False)
+
+            select_object(obj, True)
+            set_active_object(obj)
+
+            matrix = obj.matrix_world.inverted()
+            bpy.ops.object.convert(target='MESH')
+            print("Converted: " + str(obj.type))
+
+            select_objects(children, True)
+            bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
+            # # Meshに変換した際、子オブジェクトの位置がずれるので修正をかける
+            # children = get_children(obj, only_current_view_layer=False)
+            # for c in children:
+            #     c.matrix_parent_inverse = matrix
+        elif obj.type == 'EMPTY':
+            deselect_all_objects()
+            select_object(obj, True)
+            set_active_object(obj)
+
+            bpy.ops.object.add(type='MESH')
+            new_obj = bpy.context.object
+            new_obj.matrix_world = obj.matrix_world.copy()
+            new_obj.name = obj.name
+            new_obj.data.name = obj.name
+            new_obj.parent = obj.parent
+
+            children = get_children(obj, only_current_view_layer=False)
+            select_objects(children, True)
+            bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
+            # for c in children:
+            #     c.parent = new_obj
+            #     c.matrix_parent_inverse = new_obj.matrix_world.inverted()
+
+            if merged == obj:
+                merged = new_obj
+            targets[i] = new_obj
+            bpy.data.objects.remove(obj)
 
     if not apply_parentobj_modifier:
         targets.remove(merged)
@@ -224,20 +277,14 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
     bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, animation=False)
 
     for obj in targets:
-        if obj.type == "MESH":
-            # オブジェクトの種類がメッシュなら
+        if obj.type == 'MESH':
             deselect_all_objects()
-            select_object(merged, True)
+            select_object(obj, True)
             set_active_object(obj)
+            # オブジェクトの種類がメッシュならモディファイアを適用
             b = apply_modifiers(self, enable_apply_modifiers_with_shapekeys)
             if not b:
                 return False
-
-        # else:
-        #    # オブジェクトの種類がメッシュ以外ならそのオブジェクトを削除
-        #    deselect_all_objects()
-        #    set_active_object(obj)
-        #    bpy.ops.object.delete()
 
     # オブジェクトを結合
     deselect_all_objects()
@@ -247,10 +294,13 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
         targets.sort(key=lambda x: x.name)
         print("------ Merge ------\n" + '\n'.join([obj.name for obj in targets]) + "\n-------------------")
         for obj in targets:
-            if merged == obj: continue
+            if merged == obj:
+                continue
+            if obj.type != 'MESH':
+                continue
             select_object(obj, True)
             if obj.data.use_auto_smooth:
-                # 子オブジェクトのuse_auto_smoothがtrueならAutoSmoothを有効化
+                # 子オブジェクトのuse_auto_smoothがtrueなら親のAutoSmoothを有効化
                 merged.data.use_auto_smooth = True
                 merged.data.auto_smooth_angle = math.pi
 
@@ -525,6 +575,27 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
             return {'CANCELLED'}
 
 
+def get_selected_root_objects():
+    selected_objects = bpy.context.selected_objects
+    not_root = []
+    root_objects = []
+    for obj in selected_objects:
+        if obj in not_root:
+            continue
+        parent = obj
+        while True:
+            parent = parent.parent
+            print(parent)
+            if parent is None:
+                # 親以上のオブジェクトに選択中オブジェクトが存在しなければ、そのオブジェクトはrootとなる
+                root_objects.append(obj)
+                break
+            if parent in selected_objects:
+                not_root.append(parent)
+                break
+    return root_objects
+
+
 class OBJECT_OT_specials_merge_children(bpy.types.Operator):
     bl_idname = "object.apply_modifier_and_merge_children"
     bl_label = "Merge Children"
@@ -555,26 +626,11 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         print("apply_modifier_and_merge_children")
 
         # rootを取得
-        selected_objects = bpy.context.selected_objects
-        not_root = []
-        root_objects = []
-        for obj in selected_objects:
-            if obj in not_root:
-                continue
-            parent = obj
-            while True:
-                parent = parent.parent
-                print(parent)
-                if parent is None:
-                    # 親以上のオブジェクトに選択中オブジェクトが存在しなければ、そのオブジェクトはrootとなる
-                    root_objects.append(obj)
-                    break
-                if parent in selected_objects:
-                    not_root.append(parent)
-                    break
+        root_objects = get_selected_root_objects()
 
         # 結合処理
         addon_prefs = get_addon_prefs()
+        result = []
         for obj in root_objects:
             if self.duplicate:
                 # 対象オブジェクトを複製
@@ -582,10 +638,11 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
 
             b = merge_children_recursive(self, context, obj, addon_prefs.enable_apply_modifiers_with_shapekeys,
                                          self.apply_parentobj_modifier, self.ignore_armature)
+            result.append(get_active_object())
             if not b:
                 return {'CANCELLED'}
 
-        select_objects(root_objects, True)
+        select_objects(result, True)
         return {'FINISHED'}
 
 

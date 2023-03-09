@@ -20,13 +20,13 @@ import sys
 import importlib
 
 bl_info = {
-    "name" : "AutoMerge",
-    "author" : "@sleetcat123(Twitter)",
-    "version" : (2,2,0),
-    "blender" : (2, 80, 0),
+    "name": "AutoMerge",
+    "author": "@sleetcat123(Twitter)",
+    "version": (2,2,0),
+    "blender": (2, 80, 0),
     "location": "",
-    "description" : "Merge Objects.",
-    "category" : "Objects"
+    "description": "Merge Objects.",
+    "category": "Objects"
 }
 
 imports = [
@@ -37,7 +37,7 @@ imports = [
 
 def reload_modules():
     for name in imports:
-        module_full_name = f"{__package__}.{name}"
+        module_full_name = f"{__package__}.scripts.{name}"
         if module_full_name in sys.modules:
             importlib.reload(sys.modules[module_full_name])
         else:
@@ -46,18 +46,18 @@ def reload_modules():
 
 def register():
     reload_modules()
-    for script in imports:
-        module_name = f"{__package__}.{script}"
-        module = sys.modules[module_name]
+    for name in imports:
+        module_full_name = f"{__package__}.scripts.{name}"
+        module = sys.modules[module_full_name]
         func = getattr(module, "register", None)
         if callable(func):
             func()
 
 
 def unregister():
-    for script in imports:
-        module_name = f"{__package__}.{script}"
-        module = sys.modules[module_name]
+    for name in imports:
+        module_full_name = f"{__package__}.scripts.{name}"
+        module = sys.modules[module_full_name]
         func = getattr(module, "unregister", None)
         if callable(func):
             func()

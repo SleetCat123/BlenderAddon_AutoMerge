@@ -18,9 +18,8 @@
 
 import bpy
 import math
-import os
 from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty, CollectionProperty)
-from bpy_extras.io_utils import ExportHelper, path_reference_mode
+from . import func_package_utils
 
 PARENTS_GROUP_NAME = "MergeGroup"  # マージ先となるオブジェクトが属するグループの名前
 APPLY_AS_SHAPEKEY_NAME = "%AS%"  # モディファイア名が%AS%で始まっているならApply as shapekey
@@ -59,7 +58,7 @@ def deselect_all_objects():
 
 
 def get_addon_prefs():
-    return bpy.context.preferences.addons[__package__].preferences
+    return bpy.context.preferences.addons[func_package_utils.get_package_root()].preferences
 
 
 ### endregion ###
@@ -521,7 +520,7 @@ def box_warning_read_pref(layout):
 
 ### AddonPreferences ###
 class addon_preferences(bpy.types.AddonPreferences):
-    bl_idname = __package__
+    bl_idname = func_package_utils.get_package_root()
 
     enable_apply_modifiers_with_shapekeys: BoolProperty(name="Apply Modifier with Shape Keys", default=True)
 
@@ -739,7 +738,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.app.translations.register(__package__, translations_dict)
+    bpy.app.translations.register(func_package_utils.get_package_root(), translations_dict)
 
     bpy.types.VIEW3D_MT_object_context_menu.append(INFO_MT_object_specials_auto_merge_menu)
     bpy.types.WindowManager.mizore_automerge_collection_name = bpy.props.StringProperty(PARENTS_GROUP_NAME)
@@ -749,7 +748,7 @@ def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    bpy.app.translations.unregister(__package__)
+    bpy.app.translations.unregister(func_package_utils.get_package_root())
 
     bpy.types.VIEW3D_MT_object_context_menu.remove(INFO_MT_object_specials_auto_merge_menu)
     del bpy.types.WindowManager.mizore_automerge_collection_name

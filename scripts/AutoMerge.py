@@ -19,49 +19,12 @@
 import bpy
 import math
 from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty, CollectionProperty)
-from . import func_package_utils
+from . import func_package_utils, func_utils
 
 PARENTS_GROUP_NAME = "MergeGroup"  # マージ先となるオブジェクトが属するグループの名前
 APPLY_AS_SHAPEKEY_NAME = "%AS%"  # モディファイア名が%AS%で始まっているならApply as shapekey
 FORCE_APPLY_MODIFIER_PREFIX = "%A%"  # モディファイア名が"%A%"で始まっているならArmatureなどの対象外モディファイアでも強制的に適用
 
-
-### region Func ###
-def select_object(obj, value=True):
-    #try:
-    obj.select_set(value)
-    #except RuntimeError:
-    #    print("!!! Failed to select " + obj.name)
-
-
-def select_objects(objects, value=True):
-    for obj in objects:
-        select_object(obj, value)
-
-
-def get_active_object():
-    return bpy.context.view_layer.objects.active
-
-
-def set_active_object(obj):
-    # try:
-    bpy.context.view_layer.objects.active = obj
-    # except ReferenceError:
-    #    print("removed")
-
-
-def deselect_all_objects():
-    targets = bpy.context.selected_objects
-    for obj in targets:
-        select_object(obj, False)
-    # bpy.context.view_layer.objects.active = None
-
-
-def get_addon_prefs():
-    return bpy.context.preferences.addons[func_package_utils.get_package_root()].preferences
-
-
-### endregion ###
 
 ### region Translation ###
 translations_dict = {
@@ -127,10 +90,10 @@ def merge_children_recursive(self,
     # EMPTYをメッシュに変換した場合など、オブジェクトが消えていることがあるため再取得
     children = get_children(obj, only_current_view_layer=True)
 
-    deselect_all_objects()
-    select_objects(children, True)
-    select_object(obj, True)
-    set_active_object(obj)
+    func_utils.deselect_all_objects()
+    func_utils.select_objects(children, True)
+    func_utils.select_object(obj, True)
+    func_utils.set_active_object(obj)
     print("merge:" + obj.name)
     b = apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_with_shapekeys,
                                             apply_parentobj_modifier, ignore_armature)
@@ -149,7 +112,7 @@ def duplicate_selected_objects():
 
 
 def apply_modifiers(self, enable_apply_modifiers_with_shapekeys):
-    obj = get_active_object()
+    obj = func_utils.get_active_object()
     # オブジェクトのモディファイアを適用
     if obj.data.shape_keys and len(obj.data.shape_keys.key_blocks) != 0:
         # オブジェクトにシェイプキーがあったら
@@ -219,36 +182,36 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
         modeTemp = bpy.context.object.mode
         bpy.ops.object.mode_set(mode='OBJECT')
 
-    merged = get_active_object()
-    select_object(merged, True)
+    merged = func_utils.get_active_object()
+    func_utils.select_object(merged, True)
     targets = bpy.context.selected_objects
 
     for i, obj in enumerate(targets):
         if obj.type == 'CURVE' or obj.type == 'SURFACE' or obj.type == 'META' or obj.type == 'FONT':
-            deselect_all_objects()
+            func_utils.deselect_all_objects()
 
             children = get_children(obj, only_current_view_layer=False)
-            select_objects(children, True)
+            func_utils.select_objects(children, True)
             bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
-            select_objects(children, False)
+            func_utils.select_objects(children, False)
 
-            select_object(obj, True)
-            set_active_object(obj)
+            func_utils.select_object(obj, True)
+            func_utils.set_active_object(obj)
 
             matrix = obj.matrix_world.inverted()
             bpy.ops.object.convert(target='MESH')
             print("Converted: " + str(obj.type))
 
-            select_objects(children, True)
+            func_utils.select_objects(children, True)
             bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
             # # Meshに変換した際、子オブジェクトの位置がずれるので修正をかける
             # children = get_children(obj, only_current_view_layer=False)
             # for c in children:
             #     c.matrix_parent_inverse = matrix
         elif obj.type == 'EMPTY':
-            deselect_all_objects()
-            select_object(obj, True)
-            set_active_object(obj)
+            func_utils.deselect_all_objects()
+            func_utils.select_object(obj, True)
+            func_utils.set_active_object(obj)
 
             bpy.ops.object.add(type='MESH')
             new_obj = bpy.context.object
@@ -258,7 +221,7 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
             new_obj.parent = obj.parent
 
             children = get_children(obj, only_current_view_layer=False)
-            select_objects(children, True)
+            func_utils.select_objects(children, True)
             bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
             # for c in children:
             #     c.parent = new_obj
@@ -277,18 +240,18 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
 
     for obj in targets:
         if obj.type == 'MESH':
-            deselect_all_objects()
-            select_object(obj, True)
-            set_active_object(obj)
+            func_utils.deselect_all_objects()
+            func_utils.select_object(obj, True)
+            func_utils.set_active_object(obj)
             # オブジェクトの種類がメッシュならモディファイアを適用
             b = apply_modifiers(self, enable_apply_modifiers_with_shapekeys)
             if not b:
                 return False
 
     # オブジェクトを結合
-    deselect_all_objects()
-    select_object(merged, True)
-    set_active_object(merged)
+    func_utils.deselect_all_objects()
+    func_utils.select_object(merged, True)
+    func_utils.set_active_object(merged)
     if targets and 1 < len(targets):
         targets.sort(key=lambda x: x.name)
         print("------ Merge ------\n" + '\n'.join([obj.name for obj in targets]) + "\n-------------------")
@@ -297,7 +260,7 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
                 continue
             if obj.type != 'MESH':
                 continue
-            select_object(obj, True)
+            func_utils.select_object(obj, True)
             if obj.data.use_auto_smooth:
                 # 子オブジェクトのuse_auto_smoothがtrueなら親のAutoSmoothを有効化
                 merged.data.use_auto_smooth = True
@@ -315,15 +278,15 @@ def deselect_collection(collection):
     if collection is None:
         return
     print("Deselect Collection: " + collection.name)
-    active = get_active_object()
+    active = func_utils.get_active_object()
     targets = bpy.context.selected_objects
     # 処理targetsから除外するオブジェクトの選択を外す
     # 対象コレクションに属するオブジェクトと選択中オブジェクトの積集合
     assigned_objs = list(set(collection.objects) & set(targets))
     for obj in assigned_objs:
-        deselect_all_objects()
-        select_object(obj, True)
-        set_active_object(obj)
+        func_utils.deselect_all_objects()
+        func_utils.select_object(obj, True)
+        func_utils.set_active_object(obj)
         if bpy.context.object.mode != 'OBJECT':
             # Armatureをアクティブにしたとき勝手にPoseモードになる場合があるためここで確実にObjectモードにする
             bpy.ops.object.mode_set(mode='OBJECT')
@@ -336,10 +299,10 @@ def deselect_collection(collection):
             if child == active:
                 active = None
             print("Deselect: " + child.name)
-    deselect_all_objects()
-    select_objects(targets, True)
+    func_utils.deselect_all_objects()
+    func_utils.select_objects(targets, True)
     if active is not None:
-        set_active_object(active)
+        func_utils.set_active_object(active)
 
 
 def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, enable_apply_modifiers_with_shapekeys,
@@ -402,9 +365,9 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
                 merge_root_parent = parent
                 is_parent_list[i] = True
     for merge_root_parent in roots:
-        deselect_all_objects()
-        select_object(merge_root_parent, True)
-        set_active_object(merge_root_parent)
+        func_utils.deselect_all_objects()
+        func_utils.select_object(merge_root_parent, True)
+        func_utils.set_active_object(merge_root_parent)
         bpy.ops.object.select_grouped(extend=True, type='CHILDREN_RECURSIVE')
 
         # マージ対象オブジェクトをresultsから消しておく（あとで親オブジェクトだけ再追加する）
@@ -418,7 +381,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
             # 対象オブジェクトを複製
             duplicate_selected_objects()
             print("dup:" + merge_root_parent.name)
-        active = get_active_object()
+        active = func_utils.get_active_object()
 
         # 子を再帰的にマージ
         b = merge_children_recursive(self, context, active, enable_apply_modifiers_with_shapekeys,
@@ -427,13 +390,13 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
             # 処理に失敗したら中断
             return False
 
-        dup_result_parents.append(get_active_object())
+        dup_result_parents.append(func_utils.get_active_object())
     results.extend(dup_result_parents)
     # ------------------
 
     # 選択を復元
-    deselect_all_objects()
-    select_objects(results, True)
+    func_utils.deselect_all_objects()
+    func_utils.select_objects(results, True)
 
     if modeTemp is not None:
         # 開始時のモードを復元
@@ -461,11 +424,11 @@ def assign_object_group(group_name, assign=True):
     # Unlink状態のコレクションでもPythonからは参照できてしまう場合があるようなので、確実にLink状態になるようにしておく
     # bpy.context.scene.collection.children.link(collection)
 
-    active = get_active_object()
+    active = func_utils.get_active_object()
     targets = bpy.context.selected_objects
     for obj in targets:
         if assign:
-            set_active_object(obj)
+            func_utils.set_active_object(obj)
             if obj.name not in collection.objects:
                 # コレクションに追加
                 collection.objects.link(obj)
@@ -479,7 +442,7 @@ def assign_object_group(group_name, assign=True):
         bpy.context.scene.collection.children.unlink(collection)
 
     # アクティブオブジェクトを元に戻す
-    set_active_object(active)
+    func_utils.set_active_object(active)
 
 
 def hide_collection(context, group_name, hide=True):
@@ -559,11 +522,11 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
             box_warning_read_pref(box)
             col = box.column()
             col.enabled = False
-            addon_prefs = get_addon_prefs()
+            addon_prefs = func_utils.get_addon_prefs()
             col.prop(addon_prefs, "enable_apply_modifiers_with_shapekeys")
 
     def execute(self, context):
-        addon_prefs = get_addon_prefs()
+        addon_prefs = func_utils.get_addon_prefs()
         b = apply_modifier_and_merge_children_grouped(
             self, context, None, addon_prefs.enable_apply_modifiers_with_shapekeys,
             duplicate=self.duplicate, apply_parentobj_modifier=self.apply_parentobj_modifier,
@@ -618,7 +581,7 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
             box_warning_read_pref(box)
             col = box.column()
             col.enabled = False
-            addon_prefs = get_addon_prefs()
+            addon_prefs = func_utils.get_addon_prefs()
             col.prop(addon_prefs, "enable_apply_modifiers_with_shapekeys")
 
     def execute(self, context):
@@ -628,7 +591,7 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         root_objects = get_selected_root_objects()
 
         # 結合処理
-        addon_prefs = get_addon_prefs()
+        addon_prefs = func_utils.get_addon_prefs()
         result = []
         for obj in root_objects:
             if self.duplicate:
@@ -637,11 +600,11 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
 
             b = merge_children_recursive(self, context, obj, addon_prefs.enable_apply_modifiers_with_shapekeys,
                                          self.apply_parentobj_modifier, self.ignore_armature)
-            result.append(get_active_object())
+            result.append(func_utils.get_active_object())
             if not b:
                 return {'CANCELLED'}
 
-        select_objects(result, True)
+        func_utils.select_objects(result, True)
         return {'FINISHED'}
 
 
@@ -668,7 +631,7 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
             box_warning_read_pref(box)
             col = box.column()
             col.enabled = False
-            addon_prefs = get_addon_prefs()
+            addon_prefs = func_utils.get_addon_prefs()
             col.prop(addon_prefs, "enable_apply_modifiers_with_shapekeys")
 
     def execute(self, context):
@@ -676,7 +639,7 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
             # 対象オブジェクトを複製
             duplicate_selected_objects()
 
-        addon_prefs = get_addon_prefs()
+        addon_prefs = func_utils.get_addon_prefs()
         b = apply_modifier_and_merge_selections(self, context, addon_prefs.enable_apply_modifiers_with_shapekeys,
                                                 self.apply_parentobj_modifier, self.ignore_armature)
         if b:

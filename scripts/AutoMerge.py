@@ -19,11 +19,7 @@
 import bpy
 import math
 from bpy.props import (StringProperty, BoolProperty, IntProperty, FloatProperty, EnumProperty, CollectionProperty)
-from . import func_package_utils, func_utils
-
-PARENTS_GROUP_NAME = "MergeGroup"  # マージ先となるオブジェクトが属するグループの名前
-APPLY_AS_SHAPEKEY_NAME = "%AS%"  # モディファイア名が%AS%で始まっているならApply as shapekey
-FORCE_APPLY_MODIFIER_PREFIX = "%A%"  # モディファイア名が"%A%"で始まっているならArmatureなどの対象外モディファイアでも強制的に適用
+from . import consts, func_package_utils, func_utils, func_apply_modifiers
 
 
 ### region Translation ###
@@ -111,65 +107,6 @@ def duplicate_selected_objects():
     return dup_source, dup_result
 
 
-def apply_modifiers(self, enable_apply_modifiers_with_shapekeys):
-    obj = func_utils.get_active_object()
-    # オブジェクトのモディファイアを適用
-    if obj.data.shape_keys and len(obj.data.shape_keys.key_blocks) != 0:
-        # オブジェクトにシェイプキーがあったら
-        succeed_import = False
-        if enable_apply_modifiers_with_shapekeys:
-            try:
-                # ShapeKeysUtil連携
-                # ShapeKeysUtilが導入されていたらシェイプキーつきオブジェクトでもモディファイア適用
-                b = bpy.ops.object.shapekeys_util_apply_mod_with_shapekeys_automerge()
-                succeed_import = True
-                if 'FINISHED' not in b:
-                    return False
-            except AttributeError:
-                t = "!!! Failed to load ShapeKeysUtil !!! - on apply modifier"
-                print(t)
-                self.report({'ERROR'}, t)
-        if enable_apply_modifiers_with_shapekeys == False or succeed_import == False:
-            # オブジェクトにシェイプキーが存在するなら適用せずモディファイアを削除
-            obj.modifiers.clear()
-            self.report({'INFO'}, "[" + obj.name + "] has shape key. apply modifier was skipped.")
-    else:
-        for modifier in obj.modifiers:
-            if not modifier.show_render:
-                # モディファイアがレンダリング対象ではない（モディファイア一覧のカメラアイコンが押されていない）なら無視
-                continue
-            if modifier.name.startswith(APPLY_AS_SHAPEKEY_NAME):
-                # モディファイア名が%AS%で始まっているならApply as shapekey
-                try:
-                    # 名前の文字列から%AS%を削除する
-                    modifier.name = modifier.name[len(APPLY_AS_SHAPEKEY_NAME):len(modifier.name)]
-                    print(f"Apply as shapekey: [{modifier.name}]")
-                    # Apply As Shape
-                    bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=modifier.name)
-                    # シェイプキーが追加された影響で通常のApply Modifierが動作しなくなるので関数をリスタート
-                    return apply_modifiers(self, enable_apply_modifiers_with_shapekeys)
-                except RuntimeError:
-                    # 無効なModifier（対象オブジェクトが指定されていないなどの状態）は適用しない
-                    print("!!! Apply as shapekey failed !!!: [{0}]".format(modifier.name))
-                    bpy.ops.object.modifier_remove(modifier=modifier.name)
-            elif modifier.name.startswith(FORCE_APPLY_MODIFIER_PREFIX) or modifier.type != 'ARMATURE':
-                # モディファイアが処理対象モディファイアなら
-                # または、モディファイアの名前欄が%A%で始まっているなら
-                try:
-                    bpy.ops.object.modifier_apply(modifier=modifier.name)
-                except RuntimeError:
-                    # 無効なModifier（対象オブジェクトが指定されていないなどの状態）は適用しない
-                    print("!!! Apply failed !!!: [{0}]".format(modifier.name))
-                    bpy.ops.object.modifier_remove(modifier=modifier.name)
-                else:
-                    try:
-                        # なんかここだけUnicodeEncodeErrorが出たり出なかったりする。なんで……？
-                        print("Apply: [{0}]".format(modifier.name))
-                    except UnicodeDecodeError:
-                        print("Apply")
-    return True
-
-
 def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_with_shapekeys,
                                         apply_parentobj_modifier=False, ignore_armature=False):
     modeTemp = None
@@ -240,7 +177,7 @@ def apply_modifier_and_merge_selections(self, context, enable_apply_modifiers_wi
             func_utils.select_object(obj, True)
             func_utils.set_active_object(obj)
             # オブジェクトの種類がメッシュならモディファイアを適用
-            b = apply_modifiers(self, enable_apply_modifiers_with_shapekeys)
+            b = func_apply_modifiers.apply_modifiers(self, enable_apply_modifiers_with_shapekeys)
             if not b:
                 return False
 
@@ -310,7 +247,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
         "xxxxxx Targets xxxxxx\n" + '\n'.join([obj.name for obj in bpy.context.selected_objects]) + "\nxxxxxxxxxxxxxxx")
 
     # コレクションを取得
-    collection = find_collection(PARENTS_GROUP_NAME)
+    collection = find_collection(consts.PARENTS_GROUP_NAME)
     if not collection:
         # コレクションがなかったら処理中断
         return
@@ -648,15 +585,15 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
 class OBJECT_OT_specials_assign_merge_group(bpy.types.Operator):
     bl_idname = "object.assign_merge_group"
     bl_label = "Assign Merge Group"
-    bl_description = "選択中のオブジェクトを\nオブジェクトグループ“" + PARENTS_GROUP_NAME + "”に入れたり外したりします"
+    bl_description = "選択中のオブジェクトを\nオブジェクトグループ“" + consts.PARENTS_GROUP_NAME + "”に入れたり外したりします"
     bl_options = {'REGISTER', 'UNDO'}
 
     assign: bpy.props.BoolProperty(name="Assign", default=True)
 
     def execute(self, context):
-        assign_object_group(group_name=PARENTS_GROUP_NAME, assign=self.assign)
+        assign_object_group(group_name=consts.PARENTS_GROUP_NAME, assign=self.assign)
         # exclude_collection(context=context, group_name=PARENTS_GROUP_NAME, exclude=True)
-        hide_collection(context=context, group_name=PARENTS_GROUP_NAME, hide=True)
+        hide_collection(context=context, group_name=consts.PARENTS_GROUP_NAME, hide=True)
         return {'FINISHED'}
 
 
@@ -700,7 +637,7 @@ def register():
     bpy.app.translations.register(func_package_utils.get_package_root(), translations_dict)
 
     bpy.types.VIEW3D_MT_object_context_menu.append(INFO_MT_object_specials_auto_merge_menu)
-    bpy.types.WindowManager.mizore_automerge_collection_name = bpy.props.StringProperty(PARENTS_GROUP_NAME)
+    bpy.types.WindowManager.mizore_automerge_collection_name = bpy.props.StringProperty(consts.PARENTS_GROUP_NAME)
 
 
 def unregister():

@@ -143,6 +143,7 @@ def apply_modifiers(self, enable_apply_modifiers_with_shapekeys):
                 try:
                     # 名前の文字列から%AS%を削除する
                     modifier.name = modifier.name[len(APPLY_AS_SHAPEKEY_NAME):len(modifier.name)]
+                    print(f"Apply as shapekey: [{modifier.name}]")
                     # Apply As Shape
                     bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=modifier.name)
                     # シェイプキーが追加された影響で通常のApply Modifierが動作しなくなるので関数をリスタート
@@ -151,11 +152,6 @@ def apply_modifiers(self, enable_apply_modifiers_with_shapekeys):
                     # 無効なModifier（対象オブジェクトが指定されていないなどの状態）は適用しない
                     print("!!! Apply as shapekey failed !!!: [{0}]".format(modifier.name))
                     bpy.ops.object.modifier_remove(modifier=modifier.name)
-                else:
-                    try:
-                        print("Apply as shapekey: [{0}]".format(modifier.name))
-                    except UnicodeDecodeError:
-                        print("Apply as shapekey")
             elif modifier.name.startswith(FORCE_APPLY_MODIFIER_PREFIX) or modifier.type != 'ARMATURE':
                 # モディファイアが処理対象モディファイアなら
                 # または、モディファイアの名前欄が%A%で始まっているなら

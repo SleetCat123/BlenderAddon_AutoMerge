@@ -40,6 +40,27 @@ def set_active_object(obj):
     #    print("removed")
 
 
+def get_children_objects(obj):
+    result = []
+    for ob in bpy.data.objects:
+        if ob.parent == obj:
+            result.append(ob)
+    return result
+
+
+def select_children_recursive(targets=None):
+    def recursive(t):
+        select_object(t, True)
+        children = get_children_objects(t)
+        for child in children:
+            recursive(child)
+
+    if targets is None:
+        targets = bpy.context.selected_objects
+    for obj in targets:
+        recursive(obj)
+
+
 def deselect_all_objects():
     targets = bpy.context.selected_objects
     for obj in targets:

@@ -111,7 +111,7 @@ def duplicate_selected_objects():
     return dup_source, dup_result
 
 
-def apply_modifier_and_merge_selections(self, context, apply_modifiers_with_shapekeys: bool,
+def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys: bool,
                                         apply_parent_obj_modifier=False, ignore_armature=False):
     mode_temp = None
     if bpy.context.object is not None:
@@ -181,7 +181,7 @@ def apply_modifier_and_merge_selections(self, context, apply_modifiers_with_shap
             func_utils.select_object(obj, True)
             func_utils.set_active_object(obj)
             # オブジェクトの種類がメッシュならモディファイアを適用
-            b = func_apply_modifiers.apply_modifiers(operator=self,
+            b = func_apply_modifiers.apply_modifiers(operator=operator,
                                                      apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys)
             if not b:
                 return False
@@ -536,11 +536,13 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         addon_prefs = func_utils.get_addon_prefs()
         result = []
         for obj in root_objects:
+            func_utils.deselect_all_objects()
+            func_utils.set_active_object(obj)
             if self.duplicate:
                 # 対象オブジェクトを複製
+                func_utils.select_children_recursive([obj])
                 duplicate_selected_objects()
 
-            func_utils.set_active_object(obj)
             b = merge_children_recursive(operator=self,
                                          context=context,
                                          apply_modifiers_with_shapekeys=addon_prefs.apply_modifiers_with_shapekeys,

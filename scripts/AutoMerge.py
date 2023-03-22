@@ -156,6 +156,33 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
             targets[i] = new_obj
             bpy.data.objects.remove(obj)
 
+    func_utils.deselect_all_objects()
+    func_utils.select_objects(targets, True)
+
+    # 子オブジェクトをインスタンス化している場合
+    instance_parent = []
+    instance_sources = set()
+    for obj in targets:
+        if obj.instance_type and obj.instance_type != 'NONE':
+            print(f"{obj.name} instance_type is {obj.instance_type}")
+            children_recursive = func_utils.get_children_recursive([obj])
+            children_recursive.remove(obj)
+            instance_parent.append(obj)
+            print(children_recursive)
+            instance_sources = instance_sources | set(children_recursive)
+            print(instance_sources)
+    if instance_sources:
+        print(f"instance_sources: \n{instance_sources}")
+        bpy.ops.object.duplicates_make_real(use_base_parent=True, use_hierarchy=True)
+        for obj in instance_parent:
+            obj.data = bpy.data.meshes.new('new_mesh')
+            if obj.modifiers:
+                obj.modifiers.clear()
+        for obj in instance_sources:
+            print(f"remove: {obj}")
+            bpy.data.objects.remove(obj)
+    targets = bpy.context.selected_objects
+
     # リンクされたオブジェクトのモディファイアは適用できないので予めリンクを解除しておく
     bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, animation=False)
 
@@ -175,7 +202,7 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
     func_utils.deselect_all_objects()
     func_utils.select_object(merged, True)
     func_utils.set_active_object(merged)
-    if targets:
+    if targets and len(targets) > 1:
         targets.sort(key=lambda x: x.name)
         print("------ Merge ------\n" + '\n'.join([obj.name for obj in targets]) + "\n-------------------")
         for obj in targets:
@@ -215,7 +242,7 @@ def deselect_collection(collection):
             bpy.ops.object.mode_set(mode='OBJECT')
         # オブジェクトの子も除外対象に含める
         bpy.ops.object.select_grouped(extend=True, type='CHILDREN_RECURSIVE')
-        children = bpy.context.selected_objects;
+        children = bpy.context.selected_objects
         for child in children:
             if child in targets:
                 targets.remove(child)
@@ -520,7 +547,8 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
             func_utils.set_active_object(obj)
             if self.duplicate:
                 # 対象オブジェクトを複製
-                func_utils.select_children_recursive([obj])
+                children_recursive = func_utils.get_children_recursive([obj])
+                func_utils.select_objects(children_recursive, True)
                 duplicate_selected_objects()
 
             b = merge_children_recursive(operator=self,

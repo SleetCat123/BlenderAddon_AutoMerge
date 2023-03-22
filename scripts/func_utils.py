@@ -40,12 +40,14 @@ def set_active_object(obj):
     #    print("removed")
 
 
-def get_children_objects(obj):
-    result = []
-    for ob in bpy.data.objects:
-        if ob.parent == obj:
-            result.append(ob)
-    return result
+def get_children_objects(obj, only_current_view_layer: bool = True):
+    all_objects = bpy.data.objects
+    if only_current_view_layer:
+        current_layer_objects = bpy.context.window.view_layer.objects
+        return [child for child in all_objects if
+                child.parent == obj and child in current_layer_objects]
+    else:
+        return [child for child in all_objects if child.parent == obj]
 
 
 def select_children_recursive(targets=None):

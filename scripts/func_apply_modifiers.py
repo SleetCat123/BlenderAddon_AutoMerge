@@ -24,6 +24,7 @@ def apply_modifiers(operator, apply_modifiers_with_shapekeys: bool):
     obj = func_utils.get_active_object()
     # オブジェクトのモディファイアを適用
     if obj.data.shape_keys and len(obj.data.shape_keys.key_blocks) != 0:
+        print(f"{obj.name} has shapekey ({len(obj.data.shape_keys.key_blocks)})")
         # オブジェクトにシェイプキーがあったら
         succeed_import = False
         if apply_modifiers_with_shapekeys:
@@ -38,15 +39,17 @@ def apply_modifiers(operator, apply_modifiers_with_shapekeys: bool):
                 t = "!!! Failed to load ShapeKeysUtil !!! - on apply modifier"
                 print(t)
                 operator.report({'ERROR'}, t)
-        if apply_modifiers_with_shapekeys == False or succeed_import == False:
+        if not apply_modifiers_with_shapekeys or not succeed_import:
             # オブジェクトにシェイプキーが存在するなら適用せずモディファイアを削除
             obj.modifiers.clear()
             operator.report({'INFO'}, "[" + obj.name + "] has shape key. apply modifier was skipped.")
     else:
         for modifier in obj.modifiers:
-            if not modifier.show_render or modifier.name.startswith(consts.FORCE_KEEP_MODIFIER_PREFIX):
-                # モディファイアがレンダリング対象ではない（モディファイア一覧のカメラアイコンが押されていない）
-                # またはモディファイア名がFORCE_KEEP_MODIFIER_PREFIXで始まっているなら無視
+            if modifier.name.startswith(consts.FORCE_KEEP_MODIFIER_PREFIX):
+                # モディファイア名がFORCE_KEEP_MODIFIER_PREFIXで始まっているなら無視
+                continue
+            if not modifier.show_render:
+                # モディファイアがレンダリング対象ではない（モディファイア一覧のカメラアイコンが押されていない）なら無視
                 continue
             if modifier.name.startswith(consts.APPLY_AS_SHAPEKEY_NAME):
                 # モディファイア名が%AS%で始まっているならApply as shapekey

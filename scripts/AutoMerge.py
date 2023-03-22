@@ -46,15 +46,6 @@ translations_dict = {
 ### endregion ###
 
 ### region Func ###
-def get_children(obj, only_current_view_layer: bool):
-    all_objects = bpy.data.objects
-    if only_current_view_layer:
-        return [child for child in all_objects if
-                child.parent == obj and child.name in bpy.context.window.view_layer.objects.keys()]
-    else:
-        return [child for child in all_objects if child.parent == obj]
-
-
 def find_collection(name):
     return next((c for c in bpy.context.scene.collection.children if name in c.name), None)
 
@@ -73,7 +64,7 @@ def merge_children_recursive(operator,
     if obj.hide_get():
         return True
 
-    children = get_children(obj, only_current_view_layer=True)
+    children = func_utils.get_children_objects(obj)
     for child in children:
         # print("call:"+child.name)
         func_utils.set_active_object(child)
@@ -86,7 +77,7 @@ def merge_children_recursive(operator,
             print("!!! Failed - merge_children_recursive A")
             return False
     # EMPTYをメッシュに変換した場合など、オブジェクトが消えていることがあるため再取得
-    children = get_children(obj, only_current_view_layer=True)
+    children = func_utils.get_children_objects(obj)
 
     func_utils.deselect_all_objects()
     func_utils.select_objects(children, True)
@@ -123,7 +114,7 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
         if obj.type == 'CURVE' or obj.type == 'SURFACE' or obj.type == 'META' or obj.type == 'FONT':
             func_utils.deselect_all_objects()
 
-            children = get_children(obj, only_current_view_layer=False)
+            children = func_utils.get_children_objects(obj)
             func_utils.select_objects(children, True)
             bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
             func_utils.select_objects(children, False)
@@ -138,7 +129,7 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
             func_utils.select_objects(children, True)
             bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
             # # Meshに変換した際、子オブジェクトの位置がずれるので修正をかける
-            # children = get_children(obj, only_current_view_layer=False)
+            # children = get_children(obj)
             # for c in children:
             #     c.matrix_parent_inverse = matrix
         elif obj.type == 'EMPTY':
@@ -153,7 +144,7 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
             new_obj.data.name = obj.name
             new_obj.parent = obj.parent
 
-            children = get_children(obj, only_current_view_layer=False)
+            children = func_utils.get_children_objects(obj)
             func_utils.select_objects(children, True)
             bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
             # for c in children:

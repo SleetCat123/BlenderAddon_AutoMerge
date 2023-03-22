@@ -35,7 +35,7 @@ class OBJECT_OT_merge_children_grouped_for_exporter_addon(bpy.types.Operator):
             self,
             context,
             ignore_collection=ignore_collection,
-            enable_apply_modifiers_with_shapekeys=self.enable_apply_modifiers_with_shapekeys,
+            apply_modifiers_with_shapekeys=self.enable_apply_modifiers_with_shapekeys,
             duplicate=False,
             apply_parentobj_modifier=True,
             ignore_armature=True

@@ -20,13 +20,13 @@ import bpy
 from . import consts, func_utils
 
 
-def apply_modifiers(self, enable_apply_modifiers_with_shapekeys):
+def apply_modifiers(operator, apply_modifiers_with_shapekeys: bool):
     obj = func_utils.get_active_object()
     # オブジェクトのモディファイアを適用
     if obj.data.shape_keys and len(obj.data.shape_keys.key_blocks) != 0:
         # オブジェクトにシェイプキーがあったら
         succeed_import = False
-        if enable_apply_modifiers_with_shapekeys:
+        if apply_modifiers_with_shapekeys:
             try:
                 # ShapeKeysUtil連携
                 # ShapeKeysUtilが導入されていたらシェイプキーつきオブジェクトでもモディファイア適用
@@ -37,11 +37,11 @@ def apply_modifiers(self, enable_apply_modifiers_with_shapekeys):
             except AttributeError:
                 t = "!!! Failed to load ShapeKeysUtil !!! - on apply modifier"
                 print(t)
-                self.report({'ERROR'}, t)
-        if enable_apply_modifiers_with_shapekeys == False or succeed_import == False:
+                operator.report({'ERROR'}, t)
+        if apply_modifiers_with_shapekeys == False or succeed_import == False:
             # オブジェクトにシェイプキーが存在するなら適用せずモディファイアを削除
             obj.modifiers.clear()
-            self.report({'INFO'}, "[" + obj.name + "] has shape key. apply modifier was skipped.")
+            operator.report({'INFO'}, "[" + obj.name + "] has shape key. apply modifier was skipped.")
     else:
         for modifier in obj.modifiers:
             if not modifier.show_render:
@@ -56,7 +56,7 @@ def apply_modifiers(self, enable_apply_modifiers_with_shapekeys):
                     # Apply As Shape
                     bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=modifier.name)
                     # シェイプキーが追加された影響で通常のApply Modifierが動作しなくなるので関数をリスタート
-                    return apply_modifiers(self, enable_apply_modifiers_with_shapekeys)
+                    return apply_modifiers(operator, apply_modifiers_with_shapekeys)
                 except RuntimeError:
                     # 無効なModifier（対象オブジェクトが指定されていないなどの状態）は適用しない
                     print("!!! Apply as shapekey failed !!!: [{0}]".format(modifier.name))

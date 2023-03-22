@@ -44,8 +44,9 @@ def apply_modifiers(operator, apply_modifiers_with_shapekeys: bool):
             operator.report({'INFO'}, "[" + obj.name + "] has shape key. apply modifier was skipped.")
     else:
         for modifier in obj.modifiers:
-            if not modifier.show_render:
-                # モディファイアがレンダリング対象ではない（モディファイア一覧のカメラアイコンが押されていない）なら無視
+            if not modifier.show_render or modifier.name.startswith(consts.FORCE_KEEP_MODIFIER_PREFIX):
+                # モディファイアがレンダリング対象ではない（モディファイア一覧のカメラアイコンが押されていない）
+                # またはモディファイア名がFORCE_KEEP_MODIFIER_PREFIXで始まっているなら無視
                 continue
             if modifier.name.startswith(consts.APPLY_AS_SHAPEKEY_NAME):
                 # モディファイア名が%AS%で始まっているならApply as shapekey

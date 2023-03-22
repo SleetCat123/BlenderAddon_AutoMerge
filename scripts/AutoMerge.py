@@ -66,7 +66,6 @@ def find_layer_collection(name):
 def merge_children_recursive(operator,
                              context,
                              apply_modifiers_with_shapekeys: bool,
-                             apply_parent_obj_modifier=True,
                              ignore_armature=True,
                              ):
     obj = func_utils.get_active_object()
@@ -81,7 +80,6 @@ def merge_children_recursive(operator,
         b = merge_children_recursive(operator=operator,
                                      context=context,
                                      apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
-                                     apply_parent_obj_modifier=apply_parent_obj_modifier,
                                      ignore_armature=ignore_armature)
         if not b:
             # 処理に失敗したら中断
@@ -95,8 +93,7 @@ def merge_children_recursive(operator,
     func_utils.select_object(obj, True)
     func_utils.set_active_object(obj)
     print("merge:" + obj.name)
-    b = apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys,
-                                            apply_parent_obj_modifier, ignore_armature)
+    b = apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys, ignore_armature)
     if not b:
         print("!!! Failed - merge_children_recursive B")
     return b
@@ -111,8 +108,7 @@ def duplicate_selected_objects():
     return dup_source, dup_result
 
 
-def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys: bool,
-                                        apply_parent_obj_modifier=False, ignore_armature=False):
+def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys: bool, ignore_armature=False):
     mode_temp = None
     if bpy.context.object is not None:
         # 開始時のモードを記憶しオブジェクトモードに
@@ -169,28 +165,26 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
             targets[i] = new_obj
             bpy.data.objects.remove(obj)
 
-    if not apply_parent_obj_modifier:
-        targets.remove(merged)
-
     # リンクされたオブジェクトのモディファイアは適用できないので予めリンクを解除しておく
     bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, animation=False)
 
     for obj in targets:
-        if obj.type == 'MESH':
-            func_utils.deselect_all_objects()
-            func_utils.select_object(obj, True)
-            func_utils.set_active_object(obj)
-            # オブジェクトの種類がメッシュならモディファイアを適用
-            b = func_apply_modifiers.apply_modifiers(operator=operator,
-                                                     apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys)
-            if not b:
-                return False
+        if obj.type != 'MESH':
+            continue
+        func_utils.deselect_all_objects()
+        func_utils.select_object(obj, True)
+        func_utils.set_active_object(obj)
+        # オブジェクトの種類がメッシュならモディファイアを適用
+        b = func_apply_modifiers.apply_modifiers(operator=operator,
+                                                 apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys)
+        if not b:
+            return False
 
     # オブジェクトを結合
     func_utils.deselect_all_objects()
     func_utils.select_object(merged, True)
     func_utils.set_active_object(merged)
-    if targets and 1 < len(targets):
+    if targets:
         targets.sort(key=lambda x: x.name)
         print("------ Merge ------\n" + '\n'.join([obj.name for obj in targets]) + "\n-------------------")
         for obj in targets:
@@ -244,7 +238,7 @@ def deselect_collection(collection):
 
 
 def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, apply_modifiers_with_shapekeys: bool,
-                                              duplicate, apply_parent_obj_modifier=False, ignore_armature=False):
+                                              duplicate, ignore_armature=False):
     # 処理から除外するオブジェクトの選択を外す
     deselect_collection(ignore_collection)
 
@@ -325,7 +319,6 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
         b = merge_children_recursive(operator=self,
                                      context=context,
                                      apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
-                                     apply_parent_obj_modifier=True,
                                      ignore_armature=True
                                      )
         if not b:
@@ -448,13 +441,11 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     duplicate: BoolProperty(name="Duplicate", default=False)
-    apply_parent_obj_modifier: bpy.props.BoolProperty(name="Apply Parent Object Modifiers", default=True)
     ignore_armature: bpy.props.BoolProperty(name="Ignore Armature", default=True)
 
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "duplicate")
-        layout.prop(self, "apply_parent_obj_modifier")
         layout.prop(self, "ignore_armature")
         if shapekey_util_is_found():
             layout.separator()
@@ -471,7 +462,7 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
         addon_prefs = func_utils.get_addon_prefs()
         b = apply_modifier_and_merge_children_grouped(
             self, context, None, addon_prefs.apply_modifiers_with_shapekeys,
-            duplicate=self.duplicate, apply_parent_obj_modifier=self.apply_parent_obj_modifier,
+            duplicate=self.duplicate,
             ignore_armature=self.ignore_armature)
         if b:
             return {'FINISHED'}
@@ -507,13 +498,11 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     duplicate: BoolProperty(name="Duplicate", default=False)
-    apply_parent_obj_modifier: bpy.props.BoolProperty(name="Apply Parent Object Modifiers", default=True)
     ignore_armature: bpy.props.BoolProperty(name="Ignore Armature", default=True)
 
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "duplicate")
-        layout.prop(self, "apply_parent_obj_modifier")
         layout.prop(self, "ignore_armature")
         if shapekey_util_is_found():
             layout.separator()
@@ -546,13 +535,13 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
             b = merge_children_recursive(operator=self,
                                          context=context,
                                          apply_modifiers_with_shapekeys=addon_prefs.apply_modifiers_with_shapekeys,
-                                         apply_parent_obj_modifier=self.apply_parent_obj_modifier,
                                          ignore_armature=self.ignore_armature)
             result.append(func_utils.get_active_object())
             if not b:
                 return {'CANCELLED'}
 
         func_utils.select_objects(result, True)
+        print("finished")
         return {'FINISHED'}
 
 
@@ -563,13 +552,11 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     duplicate: bpy.props.BoolProperty(name="Duplicate", default=False)
-    apply_parent_obj_modifier: bpy.props.BoolProperty(name="Apply Parent Object Modifiers", default=True)
     ignore_armature: bpy.props.BoolProperty(name="Ignore Armature", default=True)
 
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "duplicate")
-        layout.prop(self, "apply_parent_obj_modifier")
         layout.prop(self, "ignore_armature")
         if shapekey_util_is_found():
             layout.separator()
@@ -589,7 +576,7 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
 
         addon_prefs = func_utils.get_addon_prefs()
         b = apply_modifier_and_merge_selections(self, context, addon_prefs.apply_modifiers_with_shapekeys,
-                                                self.apply_parent_obj_modifier, self.ignore_armature)
+                                                self.ignore_armature)
         if b:
             return {'FINISHED'}
         else:

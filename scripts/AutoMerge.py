@@ -202,21 +202,45 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
     func_utils.deselect_all_objects()
     func_utils.select_object(merged, True)
     func_utils.set_active_object(merged)
+    print(f"target: {merged}")
     if targets and len(targets) > 1:
         targets.sort(key=lambda x: x.name)
-        print("------ Merge ------\n" + '\n'.join([obj.name for obj in targets]) + "\n-------------------")
+        print("------ Merge ------\n" + '\n'.join([f"{obj.name}   {obj}" for obj in targets]) + "\n-------------------")
+        join_as_shape_meshes = []
+        is_join_needed = False
         for obj in targets:
             if merged == obj:
                 continue
             if obj.type != 'MESH':
+                print(f"{obj} is not mesh")
+                continue
+            if obj.name.startswith(consts.JOIN_AS_SHAPEKEY_PREFIX):
+                join_as_shape_meshes.append(obj)
+                print(f"join as shape: {obj}")
                 continue
             func_utils.select_object(obj, True)
+            is_join_needed = True
             if obj.data.use_auto_smooth:
                 # 子オブジェクトのuse_auto_smoothがtrueなら親のAutoSmoothを有効化
                 merged.data.use_auto_smooth = True
                 merged.data.auto_smooth_angle = math.pi
+        if is_join_needed:
+            bpy.ops.object.join()
 
-        bpy.ops.object.join()
+        # JOIN_AS_SHAPEKEY_PREFIXで始まる名前のオブジェクトをJoin as shapeで結合する
+        if join_as_shape_meshes:
+            func_utils.select_objects(join_as_shape_meshes)
+            bpy.ops.object.join_shapes()
+            for obj in join_as_shape_meshes:
+                # シェイプキー名からprefixを削除
+                key_blocks = merged.data.shape_keys.key_blocks
+                if obj.name in key_blocks:
+                    new_name = obj.name[len(consts.JOIN_AS_SHAPEKEY_PREFIX):]
+                    merged.data.shape_keys.key_blocks[obj.name].name = new_name
+                    print(f"shapekey renamed: {obj.name} -> {new_name}")
+                else:
+                    print(f"!!! failed to rename shapekey: {obj.name}")
+            func_utils.remove_objects(join_as_shape_meshes)
 
     if mode_temp is not None:
         # 開始時のモードを復元

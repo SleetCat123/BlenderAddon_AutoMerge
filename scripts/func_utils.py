@@ -74,3 +74,54 @@ def deselect_all_objects():
 def get_addon_prefs():
     return bpy.context.preferences.addons[func_package_utils.get_package_root()].preferences
 
+
+def remove_object(target: bpy.types.Object = None):
+    print("remove_object")
+    if target is None:
+        # target = get_active_object()
+        raise Exception("Remove target is empty")
+
+    data = None
+    # オブジェクトを削除
+    try:
+        if target.data:
+            data = target.data
+        print("remove: " + str(target))
+        bpy.data.objects.remove(target)
+    except ReferenceError:
+        pass
+
+    # オブジェクトのデータを削除
+    blocks = None
+    data_type = type(data)
+    if data_type == bpy.types.Mesh:
+        blocks = bpy.data.meshes
+    elif data_type == bpy.types.Armature:
+        blocks = bpy.data.armatures
+    elif data_type == bpy.types.Curve:
+        blocks = bpy.data.curves
+    elif data_type == bpy.types.Lattice:
+        blocks = bpy.data.lattices
+    elif data_type == bpy.types.Light:
+        blocks = bpy.data.lights
+    elif data_type == bpy.types.Camera:
+        blocks = bpy.data.cameras
+    elif data_type == bpy.types.MetaBall:
+        blocks = bpy.data.metaballs
+    elif data_type == bpy.types.GreasePencil:
+        blocks = bpy.data.grease_pencils
+
+    if blocks and data.users == 0:
+        print("remove: " + str(data))
+        blocks.remove(data)
+
+
+def remove_objects(targets=None):
+    print("remove_objects")
+    if targets is None:
+        # targets = bpy.context.selected_objects
+        raise Exception("Remove target is empty")
+
+    for obj in targets:
+        remove_object(target=obj)
+

@@ -20,4 +20,5 @@ PARENTS_GROUP_NAME = "MergeGroup"  # マージ先となるオブジェクトが�
 APPLY_AS_SHAPEKEY_NAME = "%AS%"  # モディファイア名が%AS%で始まっているならApply as shapekey
 FORCE_APPLY_MODIFIER_PREFIX = "%A%"  # モディファイア名が"%A%"で始まっているならArmatureなどの対象外モディファイアでも強制的に適用
 FORCE_KEEP_MODIFIER_PREFIX = "%KEEP%"  # モディファイア名が"%KEEP%"で始まっているならモディファイアを適用せずに処理を続行する
+JOIN_AS_SHAPEKEY_PREFIX = "%SHAPE%"  # オブジェクト名が"%SHAPE%"で始まっているならそのオブジェクトをJoin as shapeで結合する
 

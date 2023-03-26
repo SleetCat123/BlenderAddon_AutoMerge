@@ -17,11 +17,11 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import consts, func_utils
+from . import consts, func_object_utils
 
 
 def apply_modifiers(operator, apply_modifiers_with_shapekeys: bool):
-    obj = func_utils.get_active_object()
+    obj = func_object_utils.get_active_object()
     # オブジェクトのモディファイアを適用
     if obj.data.shape_keys and len(obj.data.shape_keys.key_blocks) != 0:
         print(f"{obj.name} has shapekey ({len(obj.data.shape_keys.key_blocks)})")

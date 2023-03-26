@@ -16,8 +16,6 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-import sys
-import importlib
 
 bl_info = {
     "name": "AutoMerge",
@@ -29,38 +27,56 @@ bl_info = {
     "category": "Objects"
 }
 
-imports = [
-    "AutoMerge",
-    "link_with_MizoresCustomExporter",
-    "func_utils",
-    "consts",
+
+def reload():
+    import importlib
+    for file in files:
+        importlib.reload(file)
+
+
+try:
+    is_loaded
+    reload()
+except NameError:
+    from .scripts import (
+        AutoMerge,
+        consts,
+        func_apply_modifier_and_merge_children_grouped,
+        func_apply_modifiers,
+        func_collection_utils,
+        func_object_utils,
+        func_package_utils,
+        link_with_MizoresCustomExporter,
+    )
+
+files = [
+    AutoMerge,
+    consts,
+    func_apply_modifier_and_merge_children_grouped,
+    func_apply_modifiers,
+    func_collection_utils,
+    func_object_utils,
+    func_package_utils,
+    link_with_MizoresCustomExporter,
 ]
 
-
-def reload_modules():
-    for name in imports:
-        module_full_name = f"{__package__}.scripts.{name}"
-        if module_full_name in sys.modules:
-            importlib.reload(sys.modules[module_full_name])
-        else:
-            importlib.import_module(module_full_name)
+is_loaded = False
 
 
 def register():
-    reload_modules()
-    for name in imports:
-        module_full_name = f"{__package__}.scripts.{name}"
-        module = sys.modules[module_full_name]
-        func = getattr(module, "register", None)
+    global is_loaded
+    if is_loaded:
+        reload()
+    for file in files:
+        func = getattr(file, "register", None)
         if callable(func):
             func()
+    is_loaded = True
 
 
 def unregister():
-    for name in imports:
-        module_full_name = f"{__package__}.scripts.{name}"
-        module = sys.modules[module_full_name]
-        func = getattr(module, "unregister", None)
+    for file in files:
+        func = getattr(file, "unregister", None)
         if callable(func):
             func()
 

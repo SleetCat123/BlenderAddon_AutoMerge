@@ -125,3 +125,23 @@ def remove_objects(targets=None):
     for obj in targets:
         remove_object(target=obj)
 
+
+def get_selected_root_objects():
+    selected_objects = bpy.context.selected_objects
+    not_root = []
+    root_objects = []
+    for obj in selected_objects:
+        if obj in not_root:
+            continue
+        parent = obj
+        while True:
+            parent = parent.parent
+            print(parent)
+            if parent is None:
+                # 親以上のオブジェクトに選択中オブジェクトが存在しなければ、そのオブジェクトはrootとなる
+                root_objects.append(obj)
+                break
+            if parent in selected_objects:
+                not_root.append(parent)
+                break
+    return root_objects

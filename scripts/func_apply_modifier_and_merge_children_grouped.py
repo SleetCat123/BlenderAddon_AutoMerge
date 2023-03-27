@@ -17,7 +17,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import consts, func_object_utils, func_collection_utils
+from . import consts, func_object_utils, func_collection_utils, func_merge_children_recursive
 
 
 def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, apply_modifiers_with_shapekeys: bool,
@@ -99,7 +99,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
         active = func_object_utils.get_active_object()
 
         # 子を再帰的にマージ
-        b = func_collection_utils.merge_children_recursive(
+        b = func_merge_children_recursive.merge_children_recursive(
             operator=self,
             context=context,
             apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,

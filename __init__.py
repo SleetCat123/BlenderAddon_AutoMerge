@@ -39,26 +39,44 @@ try:
     reload()
 except NameError:
     from .scripts import (
-        AutoMerge,
+        addon_preferences,
         consts,
         func_apply_modifier_and_merge_children_grouped,
+        func_apply_modifier_and_merge_selections,
         func_apply_modifiers,
         func_collection_utils,
+        func_merge_children_recursive,
         func_object_utils,
         func_package_utils,
+        func_ui_utils,
         link_with_MizoresCustomExporter,
+        link_with_ShapeKeysUtil,
+        menu_object_context,
+        operator_assign_merge_group,
+        operator_merge_children,
+        operator_merge_children_grouped,
+        operator_merge_selections,
         translations,
     )
 
 files = [
-    AutoMerge,
+    addon_preferences,
     consts,
     func_apply_modifier_and_merge_children_grouped,
+    func_apply_modifier_and_merge_selections,
     func_apply_modifiers,
     func_collection_utils,
+    func_merge_children_recursive,
     func_object_utils,
     func_package_utils,
+    func_ui_utils,
     link_with_MizoresCustomExporter,
+    link_with_ShapeKeysUtil,
+    menu_object_context,
+    operator_assign_merge_group,
+    operator_merge_children,
+    operator_merge_children_grouped,
+    operator_merge_selections,
     translations,
 ]
 

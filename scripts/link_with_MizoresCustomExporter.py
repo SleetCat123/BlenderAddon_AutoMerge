@@ -17,7 +17,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import AutoMerge
+from . import func_apply_modifier_and_merge_children_grouped
 from bpy.props import PointerProperty
 
 
@@ -31,7 +31,7 @@ class OBJECT_OT_merge_children_grouped_for_exporter_addon(bpy.types.Operator):
 
     def execute(self, context):
         ignore_collection = bpy.types.WindowManager.mizore_automerge_temp_ignore_collection
-        b = AutoMerge.apply_modifier_and_merge_children_grouped(
+        b = func_apply_modifier_and_merge_children_grouped.apply_modifier_and_merge_children_grouped(
             self,
             context,
             ignore_collection=ignore_collection,

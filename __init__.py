@@ -47,6 +47,7 @@ except NameError:
         func_object_utils,
         func_package_utils,
         link_with_MizoresCustomExporter,
+        translations,
     )
 
 files = [
@@ -58,6 +59,7 @@ files = [
     func_object_utils,
     func_package_utils,
     link_with_MizoresCustomExporter,
+    translations,
 ]
 
 is_loaded = False

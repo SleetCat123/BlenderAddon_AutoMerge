@@ -32,7 +32,9 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
     collection = func_collection_utils.find_collection(consts.PARENTS_GROUP_NAME)
     if not collection:
         # コレクションがなかったら処理中断
-        return
+        print(f"Collection [{consts.PARENTS_GROUP_NAME}] is not found")
+        # 成功扱いにしたいのでTrueを返しておく
+        return True
     if collection.name not in bpy.context.scene.collection.children.keys():
         # コレクションをLinkする。
         # Unlink状態のコレクションでもPythonからは参照できてしまう場合があるようなので、確実にLink状態になるようにしておく
@@ -107,6 +109,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
             )
         if not b:
             # 処理に失敗したら中断
+            print(f"!!! merge_children_recursive was failed")
             return False
 
         dup_result_parents.append(func_object_utils.get_active_object())

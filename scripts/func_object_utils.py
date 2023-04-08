@@ -64,6 +64,19 @@ def get_children_recursive(targets, only_current_view_layer: bool = True):
     return result
 
 
+def select_children_recursive(targets=None):
+    def recursive(t):
+        select_object(t, True)
+        children = get_children_objects(t)
+        for child in children:
+            recursive(child)
+
+    if targets is None:
+        targets = bpy.context.selected_objects
+    for obj in targets:
+        recursive(obj)
+
+
 def deselect_all_objects():
     targets = bpy.context.selected_objects
     for obj in targets:

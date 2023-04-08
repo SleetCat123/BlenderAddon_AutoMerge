@@ -25,6 +25,8 @@ FORCE_APPLY_MODIFIER_PREFIX = "%A%"  # モディファイア名が"%A%"で始ま
 FORCE_KEEP_MODIFIER_PREFIX = "%KEEP%"  # モディファイア名が"%KEEP%"で始まっているならモディファイアを適用せずに処理を続行する
 JOIN_AS_SHAPEKEY_PREFIX = "%SHAPE%"  # オブジェクト名が"%SHAPE%"で始まっているならそのオブジェクトをJoin as shapeで結合する
 
+DESC = ".desc"
+
 
 def register():
     bpy.types.WindowManager.mizore_automerge_collection_name = bpy.props.StringProperty(PARENTS_GROUP_NAME)

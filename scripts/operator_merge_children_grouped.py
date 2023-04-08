@@ -18,13 +18,13 @@
 
 import bpy
 from bpy.props import BoolProperty
-from . import func_object_utils, func_ui_utils, func_apply_modifier_and_merge_children_grouped, link_with_ShapeKeysUtil
+from . import consts, func_object_utils, func_ui_utils, func_apply_modifier_and_merge_children_grouped, link_with_ShapeKeysUtil
 
 
 class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
     bl_idname = "object.apply_modifier_and_merge_children_grouped"
     bl_label = "Merge Grouped Children"
-    bl_description = "選択中のオブジェクトのうち、\nオブジェクトグループ“MergeGroup”に属するものに対し、それぞれ子階層以下にあるオブジェクトをマージします"
+    bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
     duplicate: BoolProperty(name="Duplicate", default=False)

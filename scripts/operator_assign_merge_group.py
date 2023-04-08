@@ -24,7 +24,7 @@ from . import consts, func_collection_utils
 class OBJECT_OT_specials_assign_merge_group(bpy.types.Operator):
     bl_idname = "object.assign_merge_group"
     bl_label = "Assign Merge Group"
-    bl_description = "選択中のオブジェクトを\nオブジェクトグループ“" + consts.PARENTS_GROUP_NAME + "”に入れたり外したりします"
+    bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
     assign: bpy.props.BoolProperty(name="Assign", default=True)

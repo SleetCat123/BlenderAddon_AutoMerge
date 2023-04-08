@@ -17,7 +17,12 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import func_package_utils
+from . import consts, func_package_utils
+from .consts import DESC
+from .operator_merge_selections import OBJECT_OT_specials_merge_selections as merge_selections
+from .operator_merge_children import OBJECT_OT_specials_merge_children as merge_children
+from .operator_merge_children_grouped import OBJECT_OT_specials_merge_children_grouped as merge_children_grouped
+from .operator_assign_merge_group import OBJECT_OT_specials_assign_merge_group as assing_merge_group
 
 
 translations_dict = {
@@ -36,6 +41,13 @@ translations_dict = {
         ("*", "box_warning_read_pref_1"): "以下の項目は",
         ("*", "box_warning_read_pref_2"): "Preference画面から設定できます。",
         ("*", "box_warning_read_pref_3"): "（アドオン同梱の画像参照）",
+        ("*", merge_selections.bl_idname + DESC): "最後に選択したオブジェクトに対し、\n選択中の他オブジェクトをマージします",
+        ("*", merge_children.bl_idname + DESC): "最後に選択したオブジェクトに対し、\nその子階層以下にあるオブジェクトをマージします",
+        ("*", merge_children_grouped.bl_idname + DESC):
+            "選択中のオブジェクトのうち、\n"
+            "オブジェクトグループ“MergeGroup”に属するものに対し、それぞれ子階層以下にあるオブジェクトをマージします",
+        ("*", assing_merge_group.bl_idname + DESC):
+            "選択中のオブジェクトを\nオブジェクトグループ“" + consts.PARENTS_GROUP_NAME + "”に入れたり外したりします",
     },
 }
 

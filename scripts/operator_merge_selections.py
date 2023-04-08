@@ -18,13 +18,13 @@
 
 import bpy
 from bpy.props import BoolProperty
-from . import func_object_utils, func_ui_utils, func_apply_modifier_and_merge_selections, link_with_ShapeKeysUtil
+from . import func_object_utils, consts, func_ui_utils, func_apply_modifier_and_merge_selections, link_with_ShapeKeysUtil
 
 
 class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
     bl_idname = "object.apply_modifier_and_merge_selections"
     bl_label = "Merge Selections"
-    bl_description = "最後に選択したオブジェクトに対し、\n選択中の他オブジェクトをマージします"
+    bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
     duplicate: BoolProperty(name="Duplicate", default=False)

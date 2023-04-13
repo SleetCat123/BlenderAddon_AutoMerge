@@ -22,13 +22,12 @@ from . import consts, func_collection_utils
 
 # 選択オブジェクトをMergeGroupグループに入れたり外したりするクラス
 class OBJECT_OT_specials_assign_merge_group(bpy.types.Operator):
-    bl_idname = "object.assign_merge_group"
+    bl_idname = "object.automerge_assign_merge_group"
     bl_label = "Assign Merge Group"
     bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
-    assign: bpy.props.BoolProperty(name="Assign", default=True,
-                                   description=bpy.app.translations.pgettext(bl_idname + "assign"))
+    assign: bpy.props.BoolProperty(name="Assign", default=True)
 
     def execute(self, context):
         func_collection_utils.assign_object_group(group_name=consts.PARENTS_GROUP_NAME, assign=self.assign)

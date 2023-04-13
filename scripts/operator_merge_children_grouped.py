@@ -22,7 +22,7 @@ from . import consts, func_object_utils, func_ui_utils, func_apply_modifier_and_
 
 
 class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
-    bl_idname = "object.apply_modifier_and_merge_children_grouped"
+    bl_idname = "object.automerge_apply_modifier_and_merge_children_grouped"
     bl_label = "Merge Grouped Children"
     bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}

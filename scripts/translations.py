@@ -41,6 +41,9 @@ translations_dict = {
         ("*", merge_children_grouped.bl_idname + DESC):
             f"Merge child objects of selected objects assigned to the \"{consts.PARENTS_GROUP_NAME}\" collection",
 
+        ("*", assing_merge_group.bl_idname + DESC):
+            f"Assign or removes the selected object(s) to or from the collection \"{consts.PARENTS_GROUP_NAME}\"",
+
         ("*", consts.KEY_IGNORE_ARMATURE): "Keep Armature modifier",
         ("*", consts.KEY_DUPLICATE): "Processing on duplicated objects",
     },
@@ -58,12 +61,10 @@ translations_dict = {
 
         ("*", merge_children_grouped.bl_idname + DESC):
             "選択中のオブジェクトのうち、\n"
-            f"\"{consts.PARENTS_GROUP_NAME}\"コレクションに属するものに対し、それぞれ子階層以下にあるオブジェクトをマージします",
+            f"コレクション\"{consts.PARENTS_GROUP_NAME}\"に属するものに対し、それぞれ子階層以下にあるオブジェクトをマージします",
 
         ("*", assing_merge_group.bl_idname + DESC):
-            "選択中のオブジェクトを\nオブジェクトグループ“" + consts.PARENTS_GROUP_NAME + "”に入れたり外したりします",
-        ("*", assing_merge_group.bl_idname + "assign"):
-            "選択中のオブジェクトを\nオブジェクトグループ“" + consts.PARENTS_GROUP_NAME + "”に追加",
+            f"選択中のオブジェクトを\nコレクション\"{consts.PARENTS_GROUP_NAME}\"に入れたり外したりします",
 
         ("*", consts.KEY_IGNORE_ARMATURE): "アーマチュアモディファイアを残す",
         ("*", consts.KEY_DUPLICATE): "オブジェクトを複製して処理を行う",

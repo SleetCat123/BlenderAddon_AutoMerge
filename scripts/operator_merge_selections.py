@@ -18,7 +18,9 @@
 
 import bpy
 from bpy.props import BoolProperty
-from . import func_object_utils, consts, func_ui_utils, func_apply_modifier_and_merge_selections, link_with_ShapeKeysUtil
+from . import (
+    func_object_utils, consts, func_ui_utils, func_apply_modifier_and_merge_selections, link_with_ShapeKeysUtil
+)
 
 
 class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
@@ -27,8 +29,10 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
     bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
-    duplicate: BoolProperty(name="Duplicate", default=False)
-    ignore_armature: BoolProperty(name="Ignore Armature", default=True)
+    duplicate: BoolProperty(name="Duplicate", default=False,
+                            description=bpy.app.translations.pgettext(consts.KEY_DUPLICATE))
+    ignore_armature: BoolProperty(name="Ignore Armature", default=True,
+                                  description=bpy.app.translations.pgettext(consts.KEY_IGNORE_ARMATURE))
 
     def draw(self, context):
         layout = self.layout
@@ -51,8 +55,12 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
             bpy.ops.object.duplicate()
 
         addon_prefs = func_object_utils.get_addon_prefs()
-        b = func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(self, context, addon_prefs.apply_modifiers_with_shapekeys,
-                                                self.ignore_armature)
+        b = func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(
+            self,
+            context,
+            addon_prefs.apply_modifiers_with_shapekeys,
+            self.ignore_armature
+        )
         if b:
             return {'FINISHED'}
         else:

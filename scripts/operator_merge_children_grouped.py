@@ -27,8 +27,10 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
     bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
-    duplicate: BoolProperty(name="Duplicate", default=False)
-    ignore_armature: BoolProperty(name="Ignore Armature", default=True)
+    duplicate: BoolProperty(name="Duplicate", default=False,
+                            description=bpy.app.translations.pgettext(consts.KEY_DUPLICATE))
+    ignore_armature: BoolProperty(name="Ignore Armature", default=True,
+                                  description=bpy.app.translations.pgettext(consts.KEY_IGNORE_ARMATURE))
 
     def draw(self, context):
         layout = self.layout

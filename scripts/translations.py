@@ -33,6 +33,16 @@ translations_dict = {
         ("*", "box_warning_read_pref_1"): "You can change a setting below",
         ("*", "box_warning_read_pref_2"): " in this add-on preference.",
         ("*", "box_warning_read_pref_3"): "",
+
+        ("*", merge_selections.bl_idname + DESC): "Merge selected objects into the active object",
+
+        ("*", merge_children.bl_idname + DESC): "Merge child objects into parent objects",
+
+        ("*", merge_children_grouped.bl_idname + DESC):
+            f"Merge child objects of selected objects assigned to the \"{consts.PARENTS_GROUP_NAME}\" collection",
+
+        ("*", consts.KEY_IGNORE_ARMATURE): "Keep Armature modifier",
+        ("*", consts.KEY_DUPLICATE): "Processing on duplicated objects",
     },
     "ja_JP": {
         ("*", "box_warning_slow_method_1"): "注意：",
@@ -41,13 +51,22 @@ translations_dict = {
         ("*", "box_warning_read_pref_1"): "以下の項目は",
         ("*", "box_warning_read_pref_2"): "Preference画面から設定できます。",
         ("*", "box_warning_read_pref_3"): "（アドオン同梱の画像参照）",
-        ("*", merge_selections.bl_idname + DESC): "最後に選択したオブジェクトに対し、\n選択中の他オブジェクトをマージします",
-        ("*", merge_children.bl_idname + DESC): "最後に選択したオブジェクトに対し、\nその子階層以下にあるオブジェクトをマージします",
+
+        ("*", merge_selections.bl_idname + DESC): "最後に選択したオブジェクトに対し、\n他の選択中オブジェクトをマージします",
+
+        ("*", merge_children.bl_idname + DESC): "オブジェクトの子オブジェクトをマージします",
+
         ("*", merge_children_grouped.bl_idname + DESC):
             "選択中のオブジェクトのうち、\n"
-            "オブジェクトグループ“MergeGroup”に属するものに対し、それぞれ子階層以下にあるオブジェクトをマージします",
+            f"\"{consts.PARENTS_GROUP_NAME}\"コレクションに属するものに対し、それぞれ子階層以下にあるオブジェクトをマージします",
+
         ("*", assing_merge_group.bl_idname + DESC):
             "選択中のオブジェクトを\nオブジェクトグループ“" + consts.PARENTS_GROUP_NAME + "”に入れたり外したりします",
+        ("*", assing_merge_group.bl_idname + "assign"):
+            "選択中のオブジェクトを\nオブジェクトグループ“" + consts.PARENTS_GROUP_NAME + "”に追加",
+
+        ("*", consts.KEY_IGNORE_ARMATURE): "アーマチュアモディファイアを残す",
+        ("*", consts.KEY_DUPLICATE): "オブジェクトを複製して処理を行う",
     },
 }
 

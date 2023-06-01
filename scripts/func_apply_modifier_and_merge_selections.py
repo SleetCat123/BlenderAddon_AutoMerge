@@ -32,6 +32,9 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
     func_object_utils.select_object(merged, True)
     targets = bpy.context.selected_objects
 
+    # リンクされたオブジェクトのモディファイアは適用できないので予めリンクを解除しておく
+    bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, animation=False)
+
     for i, obj in enumerate(targets):
         if obj.type == 'CURVE' or obj.type == 'SURFACE' or obj.type == 'META' or obj.type == 'FONT':
             func_object_utils.deselect_all_objects()
@@ -96,6 +99,8 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
     if instance_sources:
         print(f"instance_sources: \n{instance_sources}")
         bpy.ops.object.duplicates_make_real(use_base_parent=True, use_hierarchy=True)
+        bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False,
+                                        animation=False)
         for obj in instance_parent:
             obj.data = bpy.data.meshes.new('new_mesh')
             if obj.modifiers:
@@ -104,9 +109,6 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
             print(f"remove: {obj}")
             bpy.data.objects.remove(obj)
     targets = bpy.context.selected_objects
-
-    # リンクされたオブジェクトのモディファイアは適用できないので予めリンクを解除しておく
-    bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, animation=False)
 
     for obj in targets:
         if obj.type != 'MESH':

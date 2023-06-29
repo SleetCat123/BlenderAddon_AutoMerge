@@ -16,18 +16,25 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-from . import func_object_utils, func_apply_modifier_and_merge_selections
+from . import consts, func_object_utils, func_collection_utils, func_apply_modifier_and_merge_selections
 
 
 def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: bool, ignore_armature=True):
+    print("merge_children_recursive")
     obj = func_object_utils.get_active_object()
     # obj.hide_set(False)
     if obj.hide_get():
         return True
 
+    merge_target_collection = func_collection_utils.find_collection(consts.PARENTS_GROUP_NAME)
+    dont_merge_collection = func_collection_utils.find_collection(consts.DONT_MERGE_GROUP_NAME)
+
     children = func_object_utils.get_children_objects(obj)
     for child in children:
         # print("call:"+child.name)
+        if dont_merge_collection and child.name in dont_merge_collection.objects:
+            if not merge_target_collection or child.name not in dont_merge_collection.objects:
+                continue
         func_object_utils.set_active_object(child)
         b = merge_children_recursive(operator=operator,
                                      context=context,
@@ -41,7 +48,10 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
     children = func_object_utils.get_children_objects(obj)
 
     func_object_utils.deselect_all_objects()
-    func_object_utils.select_objects(children, True)
+    for child in children:
+        if dont_merge_collection and child.name in dont_merge_collection.objects:
+            continue
+        func_object_utils.select_object(child, True)
     func_object_utils.select_object(obj, True)
     func_object_utils.set_active_object(obj)
     print("merge:" + obj.name)

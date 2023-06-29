@@ -56,7 +56,6 @@ except NameError:
         operator_merge_children,
         operator_merge_children_grouped,
         operator_merge_selections,
-        panel_object_list,
         translations,
     )
 
@@ -78,7 +77,6 @@ files = [
     operator_merge_children,
     operator_merge_children_grouped,
     operator_merge_selections,
-    panel_object_list,
     translations,
 ]
 

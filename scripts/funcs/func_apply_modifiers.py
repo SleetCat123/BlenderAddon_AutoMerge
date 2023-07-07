@@ -17,7 +17,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from ... import consts, func_object_utils
+from .. import consts
 from .utils import func_object_utils
 
 

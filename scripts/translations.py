@@ -17,9 +17,8 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import consts
 from .funcs.utils import func_package_utils
-from .consts import DESC
+from .consts import DESC, PARENTS_GROUP_NAME, KEY_IGNORE_ARMATURE, KEY_DUPLICATE
 from .ops.op_merge_selections import OBJECT_OT_specials_merge_selections as merge_selections
 from .ops.op_merge_children import OBJECT_OT_specials_merge_children as merge_children
 from .ops.op_merge_children_grouped import OBJECT_OT_specials_merge_children_grouped as merge_children_grouped
@@ -40,13 +39,13 @@ translations_dict = {
         ("*", merge_children.bl_idname + DESC): "Merge child objects into parent objects",
 
         ("*", merge_children_grouped.bl_idname + DESC):
-            f"Merge child objects of selected objects assigned to the \"{consts.PARENTS_GROUP_NAME}\" collection",
+            f"Merge child objects of selected objects assigned to the \"{PARENTS_GROUP_NAME}\" collection",
 
         ("*", assing_merge_group.bl_idname + DESC):
-            f"Assign or removes the selected object(s) to or from the collection \"{consts.PARENTS_GROUP_NAME}\"",
+            f"Assign or removes the selected object(s) to or from the collection \"{PARENTS_GROUP_NAME}\"",
 
-        ("*", consts.KEY_IGNORE_ARMATURE): "Keep Armature modifier",
-        ("*", consts.KEY_DUPLICATE): "Processing on duplicated objects",
+        ("*", KEY_IGNORE_ARMATURE): "Keep Armature modifier",
+        ("*", KEY_DUPLICATE): "Processing on duplicated objects",
     },
     "ja_JP": {
         ("*", "box_warning_slow_method_1"): "注意：",
@@ -62,13 +61,13 @@ translations_dict = {
 
         ("*", merge_children_grouped.bl_idname + DESC):
             "選択中のオブジェクトのうち、\n"
-            f"コレクション\"{consts.PARENTS_GROUP_NAME}\"に属するものに対し、それぞれ子階層以下にあるオブジェクトをマージします",
+            f"コレクション\"{PARENTS_GROUP_NAME}\"に属するものに対し、それぞれ子階層以下にあるオブジェクトをマージします",
 
         ("*", assing_merge_group.bl_idname + DESC):
-            f"選択中のオブジェクトを\nコレクション\"{consts.PARENTS_GROUP_NAME}\"に入れたり外したりします",
+            f"選択中のオブジェクトを\nコレクション\"{PARENTS_GROUP_NAME}\"に入れたり外したりします",
 
-        ("*", consts.KEY_IGNORE_ARMATURE): "アーマチュアモディファイアを残す",
-        ("*", consts.KEY_DUPLICATE): "オブジェクトを複製して処理を行う",
+        ("*", KEY_IGNORE_ARMATURE): "アーマチュアモディファイアを残す",
+        ("*", KEY_DUPLICATE): "オブジェクトを複製して処理を行う",
     },
 }
 

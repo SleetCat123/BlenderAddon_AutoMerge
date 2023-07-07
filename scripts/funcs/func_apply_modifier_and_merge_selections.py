@@ -18,7 +18,7 @@
 
 import bpy
 import math
-from ... import consts
+from .. import consts
 from . import func_apply_modifiers
 from .utils import func_object_utils
 

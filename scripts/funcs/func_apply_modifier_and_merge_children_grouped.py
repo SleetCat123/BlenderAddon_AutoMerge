@@ -17,7 +17,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from ... import consts
+from .. import consts
 from .utils import func_object_utils, func_collection_utils
 from . import func_merge_children_recursive
 

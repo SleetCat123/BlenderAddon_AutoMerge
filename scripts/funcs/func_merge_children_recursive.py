@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-from ... import consts
+from .. import consts
 from . import func_apply_modifier_and_merge_selections
 from .utils import func_object_utils, func_collection_utils
 

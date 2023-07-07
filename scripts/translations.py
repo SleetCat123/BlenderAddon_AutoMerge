@@ -17,12 +17,13 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import consts, func_package_utils
+from . import consts
+from .funcs.utils import func_package_utils
 from .consts import DESC
-from .operator_merge_selections import OBJECT_OT_specials_merge_selections as merge_selections
-from .operator_merge_children import OBJECT_OT_specials_merge_children as merge_children
-from .operator_merge_children_grouped import OBJECT_OT_specials_merge_children_grouped as merge_children_grouped
-from .operator_assign_merge_group import OBJECT_OT_specials_assign_merge_group as assing_merge_group
+from .ops.op_merge_selections import OBJECT_OT_specials_merge_selections as merge_selections
+from .ops.op_merge_children import OBJECT_OT_specials_merge_children as merge_children
+from .ops.op_merge_children_grouped import OBJECT_OT_specials_merge_children_grouped as merge_children_grouped
+from .ops.op_assign_merge_group import OBJECT_OT_specials_assign_merge_group as assing_merge_group
 
 
 translations_dict = {

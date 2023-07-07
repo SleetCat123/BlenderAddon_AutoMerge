@@ -17,11 +17,11 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import (
-    operator_merge_children,
-    operator_merge_children_grouped,
-    operator_merge_selections,
-    operator_assign_merge_group,
+from .ops import (
+    op_merge_children,
+    op_merge_children_grouped,
+    op_merge_selections,
+    op_assign_merge_group,
 )
 
 
@@ -34,11 +34,11 @@ class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
     bl_idname = "VIEW3D_MT_object_specials_auto_merge"
 
     def draw(self, context):
-        self.layout.operator(operator_merge_children.OBJECT_OT_specials_merge_children.bl_idname)
-        self.layout.operator(operator_merge_children_grouped.OBJECT_OT_specials_merge_children_grouped.bl_idname)
-        self.layout.operator(operator_merge_selections.OBJECT_OT_specials_merge_selections.bl_idname)
+        self.layout.operator(op_merge_children.OBJECT_OT_specials_merge_children.bl_idname)
+        self.layout.operator(op_merge_children_grouped.OBJECT_OT_specials_merge_children_grouped.bl_idname)
+        self.layout.operator(op_merge_selections.OBJECT_OT_specials_merge_selections.bl_idname)
         self.layout.separator()
-        self.layout.operator(operator_assign_merge_group.OBJECT_OT_specials_assign_merge_group.bl_idname)
+        self.layout.operator(op_assign_merge_group.OBJECT_OT_specials_assign_merge_group.bl_idname)
 
 
 def register():

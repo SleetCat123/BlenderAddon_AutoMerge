@@ -18,7 +18,9 @@
 
 import bpy
 from bpy.props import BoolProperty
-from . import consts, func_object_utils, func_ui_utils, func_merge_children_recursive, link_with_ShapeKeysUtil
+from .. import consts, link_with_ShapeKeysUtil
+from ..funcs import func_merge_children_recursive
+from ..funcs.utils import func_object_utils, func_ui_utils
 
 
 class OBJECT_OT_specials_merge_children(bpy.types.Operator):

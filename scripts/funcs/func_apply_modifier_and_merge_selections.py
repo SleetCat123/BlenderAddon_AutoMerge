@@ -18,7 +18,9 @@
 
 import bpy
 import math
-from . import consts, func_object_utils, func_apply_modifiers
+from ... import consts
+from . import func_apply_modifiers
+from .utils import func_object_utils
 
 
 def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys: bool, ignore_armature=False):

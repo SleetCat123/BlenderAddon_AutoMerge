@@ -17,7 +17,8 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import consts, func_object_utils
+from ... import consts, func_object_utils
+from .utils import func_object_utils
 
 
 def apply_modifiers(operator, apply_modifiers_with_shapekeys: bool):

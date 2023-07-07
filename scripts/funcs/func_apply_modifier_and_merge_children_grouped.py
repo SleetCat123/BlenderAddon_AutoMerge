@@ -17,7 +17,9 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import consts, func_object_utils, func_collection_utils, func_merge_children_recursive
+from ... import consts
+from .utils import func_object_utils, func_collection_utils
+from . import func_merge_children_recursive
 
 
 def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, apply_modifiers_with_shapekeys: bool,

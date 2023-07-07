@@ -41,22 +41,30 @@ except NameError:
     from .scripts import (
         addon_preferences,
         consts,
-        func_apply_modifier_and_merge_children_grouped,
-        func_apply_modifier_and_merge_selections,
-        func_apply_modifiers,
-        func_collection_utils,
-        func_merge_children_recursive,
-        func_object_utils,
-        func_package_utils,
-        func_ui_utils,
         link_with_MizoresCustomExporter,
         link_with_ShapeKeysUtil,
         menu_object_context,
-        operator_assign_merge_group,
-        operator_merge_children,
-        operator_merge_children_grouped,
-        operator_merge_selections,
         translations,
+    )
+
+    from .scripts.funcs import (
+        func_apply_modifier_and_merge_children_grouped,
+        func_apply_modifier_and_merge_selections,
+        func_apply_modifiers,
+        func_merge_children_recursive,
+    )
+    from .scripts.funcs.utils import (
+        func_collection_utils,
+        func_object_utils,
+        func_package_utils,
+        func_ui_utils,
+    )
+
+    from .scripts.ops import (
+        op_assign_merge_group,
+        op_merge_children,
+        op_merge_children_grouped,
+        op_merge_selections,
     )
 
 files = [
@@ -73,10 +81,10 @@ files = [
     link_with_MizoresCustomExporter,
     link_with_ShapeKeysUtil,
     menu_object_context,
-    operator_assign_merge_group,
-    operator_merge_children,
-    operator_merge_children_grouped,
-    operator_merge_selections,
+    op_assign_merge_group,
+    op_merge_children,
+    op_merge_children_grouped,
+    op_merge_selections,
     translations,
 ]
 

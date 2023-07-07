@@ -18,12 +18,14 @@
 
 import bpy
 from bpy.props import BoolProperty
-from . import consts, func_object_utils, func_ui_utils, func_apply_modifier_and_merge_children_grouped, link_with_ShapeKeysUtil
+from .. import consts, link_with_ShapeKeysUtil
+from ..funcs import func_apply_modifier_and_merge_selections
+from ..funcs.utils import func_object_utils, func_ui_utils
 
 
-class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
-    bl_idname = "object.automerge_apply_modifier_and_merge_children_grouped"
-    bl_label = "Merge Grouped Children"
+class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
+    bl_idname = "object.automerge_apply_modifier_and_merge_selections"
+    bl_label = "Merge Selections"
     bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -48,11 +50,17 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
             col.prop(addon_prefs, "apply_modifiers_with_shapekeys")
 
     def execute(self, context):
+        if self.duplicate:
+            # 対象オブジェクトを複製
+            bpy.ops.object.duplicate()
+
         addon_prefs = func_object_utils.get_addon_prefs()
-        b = func_apply_modifier_and_merge_children_grouped.apply_modifier_and_merge_children_grouped(
-            self, context, None, addon_prefs.apply_modifiers_with_shapekeys,
-            duplicate=self.duplicate,
-            ignore_armature=self.ignore_armature)
+        b = func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(
+            self,
+            context,
+            addon_prefs.apply_modifiers_with_shapekeys,
+            self.ignore_armature
+        )
         if b:
             return {'FINISHED'}
         else:
@@ -60,8 +68,8 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
 
 
 def register():
-    bpy.utils.register_class(OBJECT_OT_specials_merge_children_grouped)
+    bpy.utils.register_class(OBJECT_OT_specials_merge_selections)
 
 
 def unregister():
-    bpy.utils.unregister_class(OBJECT_OT_specials_merge_children_grouped)
+    bpy.utils.unregister_class(OBJECT_OT_specials_merge_selections)

@@ -16,7 +16,9 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-from . import consts, func_object_utils, func_collection_utils, func_apply_modifier_and_merge_selections
+from ... import consts
+from . import func_apply_modifier_and_merge_selections
+from .utils import func_object_utils, func_collection_utils
 
 
 def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: bool, ignore_armature=True):

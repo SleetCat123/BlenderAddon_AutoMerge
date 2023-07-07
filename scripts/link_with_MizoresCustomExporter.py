@@ -17,7 +17,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import func_apply_modifier_and_merge_children_grouped
+from .funcs import func_apply_modifier_and_merge_children_grouped
 from bpy.props import PointerProperty
 
 

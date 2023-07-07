@@ -17,7 +17,8 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import consts, func_collection_utils
+from .. import consts
+from ..funcs.utils import func_collection_utils
 
 
 # 選択オブジェクトをMergeGroupグループに入れたり外したりするクラス

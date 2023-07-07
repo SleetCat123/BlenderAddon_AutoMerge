@@ -18,7 +18,8 @@
 
 import bpy
 from bpy.props import BoolProperty
-from . import func_package_utils, func_ui_utils, link_with_ShapeKeysUtil
+from .funcs.utils import func_package_utils, func_ui_utils
+from . import link_with_ShapeKeysUtil
 
 
 class addon_preferences(bpy.types.AddonPreferences):

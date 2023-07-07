@@ -16,6 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+import bpy
+
 
 def get_package_root():
     return __package__[:__package__.find('.')]
+
+
+def get_addon_prefs():
+    return bpy.context.preferences.addons[get_package_root()].preferences

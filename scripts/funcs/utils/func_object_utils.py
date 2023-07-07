@@ -17,16 +17,21 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from . import func_package_utils
 
 
 def select_object(obj, value=True):
-    obj.select_set(value)
+    try:
+        obj.select_set(value)
+    except RuntimeError as e:
+        print(e)
 
 
 def select_objects(objects, value=True):
     for obj in objects:
-        select_object(obj, value)
+        try:
+            obj.select_set(value)
+        except RuntimeError as e:
+            print(e)
 
 
 def get_active_object():
@@ -77,15 +82,18 @@ def select_children_recursive(targets=None):
         recursive(obj)
 
 
+def select_all_objects():
+    targets = bpy.context.scene.collection.all_objects
+    for obj in targets:
+        select_object(obj, True)
+
+
 def deselect_all_objects():
-    targets = bpy.context.selected_objects
+    print("deselect_all_objects")
+    targets = bpy.context.scene.collection.all_objects
     for obj in targets:
         select_object(obj, False)
     # bpy.context.view_layer.objects.active = None
-
-
-def get_addon_prefs():
-    return bpy.context.preferences.addons[func_package_utils.get_package_root()].preferences
 
 
 def remove_object(target: bpy.types.Object = None):

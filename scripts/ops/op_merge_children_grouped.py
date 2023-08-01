@@ -20,7 +20,7 @@ import bpy
 from bpy.props import BoolProperty
 from .. import consts, link_with_ShapeKeysUtil
 from ..funcs import func_apply_modifier_and_merge_children_grouped
-from ..funcs.utils import func_object_utils, func_ui_utils
+from ..funcs.utils import func_ui_utils, func_package_utils
 
 
 class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
@@ -46,11 +46,11 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
             func_ui_utils.box_warning_read_pref(box)
             col = box.column()
             col.enabled = False
-            addon_prefs = func_object_utils.get_addon_prefs()
+            addon_prefs = func_package_utils.get_addon_prefs()
             col.prop(addon_prefs, "apply_modifiers_with_shapekeys")
 
     def execute(self, context):
-        addon_prefs = func_object_utils.get_addon_prefs()
+        addon_prefs = func_package_utils.get_addon_prefs()
         b = func_apply_modifier_and_merge_children_grouped.apply_modifier_and_merge_children_grouped(
             self, context, None, addon_prefs.apply_modifiers_with_shapekeys,
             duplicate=self.duplicate,

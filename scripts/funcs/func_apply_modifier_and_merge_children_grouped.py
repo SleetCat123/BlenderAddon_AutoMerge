@@ -114,7 +114,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
             print(f"!!! merge_children_recursive was failed")
             return False
 
-        dup_result_parents.append(func_object_utils.get_active_object())
+        dup_result_parents.extend(bpy.context.selected_objects)
     results.extend(dup_result_parents)
     # ------------------
 

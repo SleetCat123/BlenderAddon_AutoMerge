@@ -171,5 +171,6 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
     if mode_temp is not None:
         # 開始時のモードを復元
         bpy.ops.object.mode_set(mode=mode_temp)
+    print("completed")
     return True
 

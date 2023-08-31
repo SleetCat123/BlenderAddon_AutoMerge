@@ -16,6 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+import bpy
 from .. import consts
 from . import func_apply_modifier_and_merge_selections
 from .utils import func_object_utils, func_collection_utils
@@ -50,15 +51,20 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
     children = func_object_utils.get_children_objects(obj)
 
     func_object_utils.deselect_all_objects()
+    dont_merge_objects = []
     for child in children:
         if dont_merge_collection and child.name in dont_merge_collection.objects:
+            print(f"ignore: {child}")
+            dont_merge_objects.append(child)
             continue
         func_object_utils.select_object(child, True)
     func_object_utils.select_object(obj, True)
     func_object_utils.set_active_object(obj)
-    print("merge:" + obj.name)
+    print("!merge:" + obj.name)
     b = func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys, ignore_armature)
     if not b:
         print("!!! Failed - merge_children_recursive B")
+    func_object_utils.select_objects(dont_merge_objects, True)
+    print(bpy.context.selected_objects)
     return b
 

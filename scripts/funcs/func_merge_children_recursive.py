@@ -29,7 +29,7 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
         return True
 
     merge_target_collection = func_collection_utils.find_collection(consts.PARENTS_GROUP_NAME)
-    dont_merge_collection = func_collection_utils.find_collection(consts.DONT_MERGE_GROUP_NAME)
+    dont_merge_collection = func_collection_utils.find_collection(consts.DONT_MERGE_TO_PARENT_GROUP_NAME)
 
     children = func_object_utils.get_children_objects(obj)
     for child in children:

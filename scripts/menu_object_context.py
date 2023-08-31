@@ -39,6 +39,7 @@ class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
         self.layout.operator(op_merge_selections.OBJECT_OT_specials_merge_selections.bl_idname)
         self.layout.separator()
         self.layout.operator(op_assign_merge_group.OBJECT_OT_specials_assign_merge_group.bl_idname)
+        self.layout.operator(op_assign_merge_group.OBJECT_OT_specials_assign_dont_merge_to_parent_group.bl_idname)
 
 
 def register():

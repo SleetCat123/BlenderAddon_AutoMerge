@@ -37,9 +37,25 @@ class OBJECT_OT_specials_assign_merge_group(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class OBJECT_OT_specials_assign_dont_merge_to_parent_group(bpy.types.Operator):
+    bl_idname = "object.automerge_assign_dont_merge_to_parent_group"
+    bl_label = "Assign Don't Merge To Parent Group"
+    bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
+    bl_options = {'REGISTER', 'UNDO'}
+
+    assign: bpy.props.BoolProperty(name="Assign", default=True)
+
+    def execute(self, context):
+        func_collection_utils.assign_object_group(group_name=consts.DONT_MERGE_TO_PARENT_GROUP_NAME, assign=self.assign)
+        func_collection_utils.hide_collection(context=context, group_name=consts.DONT_MERGE_TO_PARENT_GROUP_NAME, hide=True)
+        return {'FINISHED'}
+
+
 def register():
     bpy.utils.register_class(OBJECT_OT_specials_assign_merge_group)
+    bpy.utils.register_class(OBJECT_OT_specials_assign_dont_merge_to_parent_group)
 
 
 def unregister():
     bpy.utils.unregister_class(OBJECT_OT_specials_assign_merge_group)
+    bpy.utils.unregister_class(OBJECT_OT_specials_assign_dont_merge_to_parent_group)

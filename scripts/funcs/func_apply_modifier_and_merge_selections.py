@@ -24,6 +24,7 @@ from .utils import func_object_utils
 
 
 def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys: bool, ignore_armature=False):
+    print("apply_modifier_and_merge_selections")
     mode_temp = None
     if bpy.context.object is not None:
         # 開始時のモードを記憶しオブジェクトモードに

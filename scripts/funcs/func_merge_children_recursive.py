@@ -23,6 +23,7 @@ from .utils import func_object_utils, func_collection_utils
 
 
 def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: bool, ignore_armature=True):
+    print("")
     print("merge_children_recursive")
     obj = func_object_utils.get_active_object()
     # obj.hide_set(False)
@@ -54,17 +55,22 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
     dont_merge_objects = []
     for child in children:
         if dont_merge_collection and child.name in dont_merge_collection.objects:
-            print(f"ignore: {child}")
+            ignore_children = func_object_utils.get_children_objects(child)
             dont_merge_objects.append(child)
-            continue
-        func_object_utils.select_object(child, True)
+            dont_merge_objects.extend(ignore_children)
+        else:
+            func_object_utils.select_object(child, True)
+    print(f"ignore: {dont_merge_objects}")
     func_object_utils.select_object(obj, True)
     func_object_utils.set_active_object(obj)
-    print("!merge:" + obj.name)
+    print("! merge to:" + obj.name)
+    print("children: "+ str(children))
+    print(str(bpy.context.selected_objects))
     b = func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys, ignore_armature)
     if not b:
         print("!!! Failed - merge_children_recursive B")
     func_object_utils.select_objects(dont_merge_objects, True)
-    print(bpy.context.selected_objects)
+    print("result: " + str(bpy.context.selected_objects))
+    print("")
     return b
 

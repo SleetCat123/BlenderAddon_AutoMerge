@@ -39,6 +39,7 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
     bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, animation=False)
 
     for i, obj in enumerate(targets):
+        # MeshではないオブジェクトをMeshにする
         if obj.type == 'CURVE' or obj.type == 'SURFACE' or obj.type == 'META' or obj.type == 'FONT':
             func_object_utils.deselect_all_objects()
 
@@ -61,6 +62,7 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
             # for c in children:
             #     c.matrix_parent_inverse = matrix
         elif obj.type == 'EMPTY':
+            # EMPTYなら空のMeshオブジェクトを作成する
             func_object_utils.deselect_all_objects()
             func_object_utils.select_object(obj, True)
             func_object_utils.set_active_object(obj)
@@ -83,11 +85,11 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
                 merged = new_obj
             targets[i] = new_obj
             bpy.data.objects.remove(obj)
-
+    # オブジェクト変換後の状況を反映するために選択しなおす
     func_object_utils.deselect_all_objects()
     func_object_utils.select_objects(targets, True)
 
-    # 子オブジェクトをインスタンス化している場合
+    # 子オブジェクトをインスタンス化している場合の処理
     instance_parent = []
     instance_sources = set()
     for obj in targets:
@@ -100,6 +102,7 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
             instance_sources = instance_sources | set(children_recursive)
             print(instance_sources)
     if instance_sources:
+        # オブジェクトを実体化し、インスタンス元の子オブジェクトを削除する
         print(f"instance_sources: \n{instance_sources}")
         bpy.ops.object.duplicates_make_real(use_base_parent=True, use_hierarchy=True)
         bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False,
@@ -113,6 +116,7 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
             bpy.data.objects.remove(obj)
     targets = bpy.context.selected_objects
 
+    # モディファイア適用
     for obj in targets:
         if obj.type != 'MESH':
             continue
@@ -134,6 +138,7 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
         targets.sort(key=lambda x: x.name)
         print("------ Merge ------\n" + '\n'.join([f"{obj.name}   {obj}" for obj in targets]) + "\n-------------------")
         join_as_shape_meshes = []
+        merged_object_children = []
         is_join_needed = False
         for obj in targets:
             if merged == obj:
@@ -142,17 +147,27 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
                 print(f"{obj} is not mesh")
                 continue
             if obj.name.startswith(consts.JOIN_AS_SHAPEKEY_PREFIX):
+                # JOIN_AS_SHAPEKEY_PREFIXで始まる名前のオブジェクトは後回し
                 join_as_shape_meshes.append(obj)
                 print(f"join as shape: {obj}")
                 continue
+
             func_object_utils.select_object(obj, True)
+            # 親子関係の再設定のため、マージ前の子オブジェクトを取得しておく
+            merged_object_children.extend(func_object_utils.get_children_objects(obj))
+
             is_join_needed = True
+
+            # 子オブジェクトのuse_auto_smoothがtrueなら親のAutoSmoothを有効化
             if obj.data.use_auto_smooth:
-                # 子オブジェクトのuse_auto_smoothがtrueなら親のAutoSmoothを有効化
                 merged.data.use_auto_smooth = True
                 merged.data.auto_smooth_angle = math.pi
+        # オブジェクトを結合
         if is_join_needed:
             bpy.ops.object.join()
+            # 子オブジェクトの親子関係を再設定
+            for obj in merged_object_children:
+                obj.parent = merged
 
         # JOIN_AS_SHAPEKEY_PREFIXで始まる名前のオブジェクトをJoin as shapeで結合する
         if join_as_shape_meshes:

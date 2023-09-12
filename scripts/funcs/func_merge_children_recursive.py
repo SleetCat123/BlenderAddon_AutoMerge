@@ -55,8 +55,7 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
     dont_merge_objects = []
     for child in children:
         if dont_merge_collection and child.name in dont_merge_collection.objects:
-            ignore_children = func_object_utils.get_children_objects(child)
-            dont_merge_objects.append(child)
+            ignore_children = func_object_utils.get_children_recursive([child])
             dont_merge_objects.extend(ignore_children)
         else:
             func_object_utils.select_object(child, True)

@@ -32,8 +32,8 @@ KEY_DUPLICATE = "duplicate"
 
 
 def register():
-    bpy.types.WindowManager.mizore_automerge_collection_name = bpy.props.StringProperty(PARENTS_GROUP_NAME)
-    bpy.types.WindowManager.mizore_automerge_dont_merge_to_parent_collection_name = bpy.props.StringProperty(DONT_MERGE_TO_PARENT_GROUP_NAME)
+    bpy.types.WindowManager.mizore_automerge_collection_name = PARENTS_GROUP_NAME
+    bpy.types.WindowManager.mizore_automerge_dont_merge_to_parent_collection_name = DONT_MERGE_TO_PARENT_GROUP_NAME
 
 
 def unregister():

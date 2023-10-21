@@ -15,7 +15,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # ##### END GPL LICENSE BLOCK #####
-
+import importlib
+import os
+import re
+from glob import glob
 
 bl_info = {
     "name": "AutoMerge",
@@ -27,86 +30,47 @@ bl_info = {
     "category": "Objects"
 }
 
-
-def reload():
-    import importlib
-    for file in files:
-        importlib.reload(file)
+loaded_modules = {}
 
 
-try:
-    is_loaded
-    reload()
-except NameError:
-    from .scripts import (
-        addon_preferences,
-        consts,
-        link_with_MizoresCustomExporter,
-        link_with_ShapeKeysUtil,
-        menu_object_context,
-        translations,
-    )
+def register_module(module):
+    func = getattr(module, "register", None)
+    if callable(func):
+        func()
 
-    from .scripts.funcs import (
-        func_apply_modifier_and_merge_children_grouped,
-        func_apply_modifier_and_merge_selections,
-        func_apply_modifiers,
-        func_merge_children_recursive,
-    )
-    from .scripts.funcs.utils import (
-        func_collection_utils,
-        func_object_utils,
-        func_package_utils,
-        func_ui_utils,
-    )
 
-    from .scripts.ops import (
-        op_assign_merge_group,
-        op_merge_children,
-        op_merge_children_grouped,
-        op_merge_selections,
-    )
-
-files = [
-    addon_preferences,
-    consts,
-    func_apply_modifier_and_merge_children_grouped,
-    func_apply_modifier_and_merge_selections,
-    func_apply_modifiers,
-    func_collection_utils,
-    func_merge_children_recursive,
-    func_object_utils,
-    func_package_utils,
-    func_ui_utils,
-    link_with_MizoresCustomExporter,
-    link_with_ShapeKeysUtil,
-    menu_object_context,
-    op_assign_merge_group,
-    op_merge_children,
-    op_merge_children_grouped,
-    op_merge_selections,
-    translations,
-]
-
-is_loaded = False
+def unregister_module(module):
+    func = getattr(module, "unregister", None)
+    if callable(func):
+        func()
 
 
 def register():
-    global is_loaded
-    if is_loaded:
-        reload()
-    for file in files:
-        func = getattr(file, "register", None)
-        if callable(func):
-            func()
-    is_loaded = True
+    path = os.path.dirname(__file__)
+    # print(path)
+    module_files = glob(f'{path}/scripts/**/*.py', recursive=True)
+    regex = re.compile(r"[\\/]")
+    module_names = [regex.sub('.', p[len(path):-3]) for p in module_files]
+    # print(module_names)
+    for module_name in module_names:
+        if module_name in loaded_modules:
+            module = loaded_modules[module_name]
+            module = importlib.reload(module)
+            # print("reload: " + str(module))
+        else:
+            module = importlib.import_module(module_name, package=__package__)
+            loaded_modules[module_name] = module
+        register_module(module)
 
 
 def unregister():
-    for file in files:
-        func = getattr(file, "unregister", None)
-        if callable(func):
-            func()
+    global loaded_modules
+    for module in loaded_modules.values():
+        unregister_module(module)
+        try:
+            importlib.reload(module)
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":

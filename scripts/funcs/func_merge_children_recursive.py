@@ -18,7 +18,7 @@
 
 import bpy
 from .. import consts
-from . import func_apply_modifier_and_merge_selections
+from .func_apply_modifier_and_merge_selections import apply_modifier_and_merge_selections
 from .utils import func_object_utils, func_collection_utils
 
 
@@ -62,7 +62,7 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
     print("! merge to:" + obj.name)
     print("children: " + str(children))
     print(str(bpy.context.selected_objects))
-    b = func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys, ignore_armature)
+    b = apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys, ignore_armature)
     if not b:
         print("!!! Failed - merge_children_recursive B")
     func_object_utils.select_objects(func_object_utils.get_children_objects(obj), True)

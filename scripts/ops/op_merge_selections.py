@@ -20,7 +20,7 @@ import bpy
 from bpy.props import BoolProperty
 from .. import consts, link_with_ShapeKeysUtil
 from ..funcs import func_apply_modifier_and_merge_selections
-from ..funcs.utils import func_ui_utils, func_package_utils
+from ..funcs.utils import func_ui_utils, func_package_utils, func_object_utils
 
 
 class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
@@ -52,7 +52,7 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
     def execute(self, context):
         if self.duplicate:
             # 対象オブジェクトを複製
-            bpy.ops.object.duplicate()
+            func_object_utils.duplicate_object()
 
         addon_prefs = func_package_utils.get_addon_prefs()
         b = func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(

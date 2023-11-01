@@ -46,7 +46,8 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
     if bpy.context.object is not None:
         # 開始時のモードを記憶しオブジェクトモードに
         mode_temp = bpy.context.object.mode
-        bpy.ops.object.mode_set(mode='OBJECT')
+        if mode_temp != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
 
     dup_source_parents = []
     dup_result_parents = []
@@ -87,7 +88,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
         func_object_utils.deselect_all_objects()
         func_object_utils.select_object(merge_root_parent, True)
         func_object_utils.set_active_object(merge_root_parent)
-        bpy.ops.object.select_grouped(extend=True, type='CHILDREN_RECURSIVE')
+        func_object_utils.select_children_recursive()
 
         # マージ対象オブジェクトをresultsから消しておく（あとで親オブジェクトだけ再追加する）
         results = list(set(results) - set(bpy.context.selected_objects))
@@ -98,9 +99,8 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
         if duplicate:
             dup_source_parents.append(merge_root_parent)
             # 対象オブジェクトを複製
-            bpy.ops.object.duplicate()
+            func_object_utils.duplicate_object()
             print("dup:" + merge_root_parent.name)
-        active = func_object_utils.get_active_object()
 
         # 子を再帰的にマージ
         b = func_merge_children_recursive.merge_children_recursive(
@@ -124,7 +124,8 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
 
     if mode_temp is not None:
         # 開始時のモードを復元
-        bpy.ops.object.mode_set(mode=mode_temp)
+        if mode_temp != 'OBJECT':
+            bpy.ops.object.mode_set(mode=mode_temp)
 
     # layer_col.exclude = True
 

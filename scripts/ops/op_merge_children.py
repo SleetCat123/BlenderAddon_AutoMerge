@@ -65,7 +65,7 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
                 # 対象オブジェクトを複製
                 children_recursive = func_object_utils.get_children_recursive([obj])
                 func_object_utils.select_objects(children_recursive, True)
-                bpy.ops.object.duplicate()
+                func_object_utils.duplicate_object()
 
             b = func_merge_children_recursive.merge_children_recursive(
                 operator=self,

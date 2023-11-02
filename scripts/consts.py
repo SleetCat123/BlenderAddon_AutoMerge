@@ -27,7 +27,7 @@ FORCE_KEEP_MODIFIER_PREFIX = "%KEEP%"  # モディファイア名が"%KEEP%"で�
 JOIN_AS_SHAPEKEY_PREFIX = "%SHAPE%"  # オブジェクト名が"%SHAPE%"で始まっているならそのオブジェクトをJoin as shapeで結合する
 
 DESC = ".desc"
-KEY_IGNORE_ARMATURE = "automerge_ignore_armature"
+KEY_REMOVE_NON_RENDER_MOD = "automerge_remove_non_render_modifiers"
 KEY_DUPLICATE = "duplicate"
 
 

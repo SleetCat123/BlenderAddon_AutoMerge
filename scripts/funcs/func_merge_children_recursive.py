@@ -22,7 +22,7 @@ from .func_apply_modifier_and_merge_selections import apply_modifier_and_merge_s
 from .utils import func_object_utils, func_collection_utils
 
 
-def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: bool, ignore_armature=True):
+def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: bool, remove_non_render_mod: bool):
     print("")
     print("merge_children_recursive")
     obj = func_object_utils.get_active_object()
@@ -43,7 +43,7 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
         b = merge_children_recursive(operator=operator,
                                      context=context,
                                      apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
-                                     ignore_armature=ignore_armature)
+                                     remove_non_render_mod=remove_non_render_mod)
         if not b:
             # 処理に失敗したら中断
             print("!!! Failed - merge_children_recursive A")
@@ -62,7 +62,12 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
     print("! merge to:" + obj.name)
     print("children: " + str(children))
     print(str(bpy.context.selected_objects))
-    b = apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_shapekeys, ignore_armature)
+    b = apply_modifier_and_merge_selections(
+        operator=operator,
+        context=context,
+        apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
+        remove_non_render_mod=remove_non_render_mod
+    )
     if not b:
         print("!!! Failed - merge_children_recursive B")
     func_object_utils.select_objects(func_object_utils.get_children_objects(obj), True)

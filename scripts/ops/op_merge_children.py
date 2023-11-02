@@ -29,10 +29,16 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
     bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
-    duplicate: BoolProperty(name="Duplicate", default=False,
-                            description=bpy.app.translations.pgettext(consts.KEY_DUPLICATE))
-    ignore_armature: BoolProperty(name="Ignore Armature", default=True,
-                                  description=bpy.app.translations.pgettext(consts.KEY_IGNORE_ARMATURE))
+    duplicate: BoolProperty(
+        name="Duplicate",
+        default=False,
+        description=bpy.app.translations.pgettext(consts.KEY_DUPLICATE)
+    )
+    remove_non_render_mod: BoolProperty(
+        name="Remove Non-Render Modifiers",
+        default=True,
+        description=bpy.app.translations.pgettext(consts.KEY_REMOVE_NON_RENDER_MOD)
+    )
 
     def draw(self, context):
         layout = self.layout
@@ -70,7 +76,8 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
                 operator=self,
                 context=context,
                 apply_modifiers_with_shapekeys=addon_prefs.apply_modifiers_with_shapekeys,
-                ignore_armature=self.ignore_armature)
+                remove_non_render_mod=self.remove_non_render_mod,
+                )
             result.append(func_object_utils.get_active_object())
             if not b:
                 return {'CANCELLED'}

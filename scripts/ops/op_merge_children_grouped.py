@@ -29,10 +29,16 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
     bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
-    duplicate: BoolProperty(name="Duplicate", default=False,
-                            description=bpy.app.translations.pgettext(consts.KEY_DUPLICATE))
-    ignore_armature: BoolProperty(name="Ignore Armature", default=True,
-                                  description=bpy.app.translations.pgettext(consts.KEY_IGNORE_ARMATURE))
+    duplicate: BoolProperty(
+        name="Duplicate",
+        default=False,
+        description=bpy.app.translations.pgettext(consts.KEY_DUPLICATE)
+    )
+    remove_non_render_mod: BoolProperty(
+        name="Remove Non-Render Modifiers",
+        default=True,
+        description=bpy.app.translations.pgettext(consts.KEY_REMOVE_NON_RENDER_MOD)
+    )
 
     def draw(self, context):
         layout = self.layout
@@ -54,7 +60,8 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
         b = func_apply_modifier_and_merge_children_grouped.apply_modifier_and_merge_children_grouped(
             self, context, None, addon_prefs.apply_modifiers_with_shapekeys,
             duplicate=self.duplicate,
-            ignore_armature=self.ignore_armature)
+            remove_non_render_mod=self.remove_non_render_mod,
+        )
         if b:
             return {'FINISHED'}
         else:

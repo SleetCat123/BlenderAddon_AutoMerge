@@ -22,8 +22,9 @@ from .utils import func_object_utils, func_collection_utils
 from . import func_merge_children_recursive
 
 
-def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, apply_modifiers_with_shapekeys: bool,
-                                              duplicate, ignore_armature=False):
+def apply_modifier_and_merge_children_grouped(self, context, ignore_collection,
+                                              apply_modifiers_with_shapekeys: bool,
+                                              duplicate: bool, remove_non_render_mod: bool):
     # 処理から除外するオブジェクトの選択を外す
     func_collection_utils.deselect_collection(ignore_collection)
 
@@ -107,6 +108,7 @@ def apply_modifier_and_merge_children_grouped(self, context, ignore_collection, 
             operator=self,
             context=context,
             apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
+            remove_non_render_mod=remove_non_render_mod,
             ignore_armature=True
             )
         if not b:

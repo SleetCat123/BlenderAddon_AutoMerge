@@ -27,7 +27,7 @@ class OBJECT_OT_merge_children_grouped_for_exporter_addon(bpy.types.Operator):
     bl_label = "[Internal] Merge Grouped Children For MizoresCustomExporter Addon"
     bl_options = {'REGISTER', 'UNDO'}
 
-    enable_apply_modifiers_with_shapekeys: bpy.props.BoolProperty(name="Ignore Armature", default=True)
+    enable_apply_modifiers_with_shapekeys: bpy.props.BoolProperty(default=True)
 
     def execute(self, context):
         ignore_collection = bpy.types.WindowManager.mizore_automerge_temp_ignore_collection
@@ -37,7 +37,7 @@ class OBJECT_OT_merge_children_grouped_for_exporter_addon(bpy.types.Operator):
             ignore_collection=ignore_collection,
             apply_modifiers_with_shapekeys=self.enable_apply_modifiers_with_shapekeys,
             duplicate=False,
-            ignore_armature=True
+            remove_non_render_mod=True
         )
         if b:
             return {'FINISHED'}

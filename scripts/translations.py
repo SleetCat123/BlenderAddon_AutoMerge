@@ -18,7 +18,7 @@
 
 import bpy
 from .funcs.utils import func_package_utils
-from .consts import DESC, PARENTS_GROUP_NAME, KEY_IGNORE_ARMATURE, KEY_DUPLICATE
+from .consts import DESC, PARENTS_GROUP_NAME, KEY_DUPLICATE, KEY_REMOVE_NON_RENDER_MOD
 from .ops.op_merge_selections import OBJECT_OT_specials_merge_selections as merge_selections
 from .ops.op_merge_children import OBJECT_OT_specials_merge_children as merge_children
 from .ops.op_merge_children_grouped import OBJECT_OT_specials_merge_children_grouped as merge_children_grouped
@@ -44,7 +44,7 @@ translations_dict = {
         ("*", assing_merge_group.bl_idname + DESC):
             f"Assign or removes the selected object(s) to or from the collection \"{PARENTS_GROUP_NAME}\"",
 
-        ("*", KEY_IGNORE_ARMATURE): "Keep Armature modifier",
+        ("*", KEY_REMOVE_NON_RENDER_MOD): "Remove non-render modifiers",
         ("*", KEY_DUPLICATE): "Processing on duplicated objects",
     },
     "ja_JP": {
@@ -66,7 +66,7 @@ translations_dict = {
         ("*", assing_merge_group.bl_idname + DESC):
             f"選択中のオブジェクトを\nコレクション\"{PARENTS_GROUP_NAME}\"に入れたり外したりします",
 
-        ("*", KEY_IGNORE_ARMATURE): "アーマチュアモディファイアを残す",
+        ("*", KEY_REMOVE_NON_RENDER_MOD): "レンダリング対象外モディファイアを削除",
         ("*", KEY_DUPLICATE): "オブジェクトを複製して処理を行う",
     },
 }

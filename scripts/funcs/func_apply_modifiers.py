@@ -63,7 +63,11 @@ def apply_modifiers(operator, apply_modifiers_with_shapekeys: bool, remove_non_r
                     # Apply As Shape
                     bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=modifier.name)
                     # シェイプキーが追加された影響で通常のApply Modifierが動作しなくなるので関数をリスタート
-                    return apply_modifiers(operator, apply_modifiers_with_shapekeys)
+                    return apply_modifiers(
+                        operator=operator,
+                        apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
+                        remove_non_render_mod=remove_non_render_mod
+                    )
                 except RuntimeError:
                     # 無効なModifier（対象オブジェクトが指定されていないなどの状態）は適用しない
                     print("!!! Apply as shapekey failed !!!: [{0}]".format(modifier.name))

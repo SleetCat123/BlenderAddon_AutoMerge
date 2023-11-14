@@ -139,6 +139,9 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
         print("------ Merge ------\n" + '\n'.join([f"{obj.name}   {obj}" for obj in targets]) + "\n-------------------")
         join_as_shape_meshes = []
         merged_object_children = []
+
+        merged_has_armature = any([m.type == 'ARMATURE' and m.object for m in merged.modifiers])
+
         is_join_needed = False
         for obj in targets:
             if merged == obj:
@@ -146,6 +149,17 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
             if obj.type != 'MESH':
                 print(f"{obj} is not mesh")
                 continue
+            if obj.data.use_auto_smooth:
+                # 子オブジェクトのuse_auto_smoothがtrueなら親のAutoSmoothを有効化
+                merged.data.use_auto_smooth = True
+                merged.data.auto_smooth_angle = math.pi
+            if not merged_has_armature:
+                # Armatureモディファイアがマージ先オブジェクトになく、マージ元オブジェクトにあるときにモディファイアを追加する
+                for m in obj.modifiers:
+                    if m.type == 'ARMATURE' and m.object:
+                        print(f"Add Armature modifier to {merged.name} ({m.object.name})")
+                        armature_mod = merged.modifiers.new("Armature", 'ARMATURE')
+                        armature_mod.object = m.object
             if obj.name.startswith(consts.JOIN_AS_SHAPEKEY_PREFIX):
                 # JOIN_AS_SHAPEKEY_PREFIXで始まる名前のオブジェクトは後回し
                 join_as_shape_meshes.append(obj)
@@ -157,11 +171,6 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
             merged_object_children.extend(func_object_utils.get_children_objects(obj))
 
             is_join_needed = True
-
-            # 子オブジェクトのuse_auto_smoothがtrueなら親のAutoSmoothを有効化
-            if obj.data.use_auto_smooth:
-                merged.data.use_auto_smooth = True
-                merged.data.auto_smooth_angle = math.pi
         # オブジェクトを結合
         if is_join_needed:
             bpy.ops.object.join()

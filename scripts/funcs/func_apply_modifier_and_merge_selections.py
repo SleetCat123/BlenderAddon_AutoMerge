@@ -160,6 +160,7 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
                         print(f"Add Armature modifier to {merged.name} ({m.object.name})")
                         armature_mod = merged.modifiers.new("Armature", 'ARMATURE')
                         armature_mod.object = m.object
+                        merged_has_armature = True
             if obj.name.startswith(consts.JOIN_AS_SHAPEKEY_PREFIX):
                 # JOIN_AS_SHAPEKEY_PREFIXで始まる名前のオブジェクトは後回し
                 join_as_shape_meshes.append(obj)

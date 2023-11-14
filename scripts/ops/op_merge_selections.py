@@ -62,10 +62,10 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
 
         addon_prefs = func_package_utils.get_addon_prefs()
         b = func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(
-            self,
-            context,
-            addon_prefs.apply_modifiers_with_shapekeys,
-            self.ignore_armature
+            operator=self,
+            context=context,
+            apply_modifiers_with_shapekeys=addon_prefs.apply_modifiers_with_shapekeys,
+            remove_non_render_mod=self.remove_non_render_mod
         )
         if b:
             return {'FINISHED'}

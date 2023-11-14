@@ -51,7 +51,6 @@ def apply_modifier_and_merge_selections(operator, context, apply_modifiers_with_
             func_object_utils.select_object(obj, True)
             func_object_utils.set_active_object(obj)
 
-            matrix = obj.matrix_world.inverted()
             bpy.ops.object.convert(target='MESH')
             print("Converted: " + str(obj.type))
 

@@ -18,7 +18,7 @@
 
 import bpy
 from .. import consts
-from ..funcs.utils import func_collection_utils
+from ..funcs.utils import func_collection_utils, func_custom_props_utils
 
 
 # 選択オブジェクトをMergeGroupグループに入れたり外したりするクラス
@@ -34,6 +34,12 @@ class OBJECT_OT_specials_assign_merge_group(bpy.types.Operator):
         func_collection_utils.assign_object_group(group_name=consts.PARENTS_GROUP_NAME, assign=self.assign)
         # exclude_collection(context=context, group_name=PARENTS_GROUP_NAME, exclude=True)
         func_collection_utils.hide_collection(context=context, group_name=consts.PARENTS_GROUP_NAME, hide=True)
+        func_custom_props_utils.assign_bool_prop(
+            target=bpy.context.selected_objects,
+            prop_name=consts.PARENTS_GROUP_NAME,
+            value=self.assign,
+            remove_if_false=True
+        )
         return {'FINISHED'}
 
 
@@ -48,6 +54,12 @@ class OBJECT_OT_specials_assign_dont_merge_to_parent_group(bpy.types.Operator):
     def execute(self, context):
         func_collection_utils.assign_object_group(group_name=consts.DONT_MERGE_TO_PARENT_GROUP_NAME, assign=self.assign)
         func_collection_utils.hide_collection(context=context, group_name=consts.DONT_MERGE_TO_PARENT_GROUP_NAME, hide=True)
+        func_custom_props_utils.assign_bool_prop(
+            target=bpy.context.selected_objects,
+            prop_name=consts.DONT_MERGE_TO_PARENT_GROUP_NAME,
+            value=self.assign,
+            remove_if_false=True
+        )
         return {'FINISHED'}
 
 

@@ -18,18 +18,20 @@
 
 import bpy
 from .. import consts
-from .utils import func_object_utils, func_collection_utils
+from .utils import func_object_utils, func_collection_utils, func_custom_props_utils
 from . import func_merge_children_recursive
 
 
 def apply_modifier_and_merge_children_grouped(self,
                                               context,
                                               ignore_collection,
+                                              ignore_prop_name,
                                               apply_modifiers_with_shapekeys: bool,
                                               duplicate: bool,
                                               remove_non_render_mod: bool):
     # 処理から除外するオブジェクトの選択を外す
     func_collection_utils.deselect_collection(ignore_collection)
+    func_custom_props_utils.select_if_prop_is_true(prop_name=ignore_prop_name, select=False)
 
     print(
         "xxxxxx Targets xxxxxx\n" + '\n'.join([obj.name for obj in bpy.context.selected_objects]) + "\nxxxxxxxxxxxxxxx")
@@ -60,7 +62,11 @@ def apply_modifier_and_merge_children_grouped(self,
 
     # ------------------
     # 結合処理
-    merge_targets = set(collection.objects) & set(targets)
+    merge_group_objects = (
+            set(collection.objects) |
+            set(func_custom_props_utils.get_objects_prop_is_true(consts.PARENTS_GROUP_NAME))
+    )
+    merge_targets = merge_group_objects & set(targets)
     # merge_targets=targets
 
     results = targets

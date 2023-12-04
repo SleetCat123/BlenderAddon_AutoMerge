@@ -18,7 +18,7 @@
 
 import bpy
 from .funcs import func_apply_modifier_and_merge_children_grouped
-from bpy.props import PointerProperty
+from bpy.props import StringProperty, BoolProperty
 
 
 # MizoresCustomExporter連携用
@@ -27,14 +27,23 @@ class OBJECT_OT_merge_children_grouped_for_exporter_addon(bpy.types.Operator):
     bl_label = "[Internal] Merge Grouped Children For MizoresCustomExporter Addon"
     bl_options = {'REGISTER', 'UNDO'}
 
-    enable_apply_modifiers_with_shapekeys: bpy.props.BoolProperty(default=True)
+    enable_apply_modifiers_with_shapekeys: BoolProperty(default=True)
+    ignore_collection_name = StringProperty(
+        name='Ignore Collection'
+    )
+    ignore_prop_name = StringProperty(
+        name='Ignore Property'
+    )
 
     def execute(self, context):
-        ignore_collection = bpy.types.WindowManager.mizore_automerge_temp_ignore_collection
+        ignore_collection = None
+        if self.ignore_collection_name in bpy.data.collections:
+            ignore_collection = bpy.data.collections[self.ignore_collection_name]
         b = func_apply_modifier_and_merge_children_grouped.apply_modifier_and_merge_children_grouped(
             self,
             context,
             ignore_collection=ignore_collection,
+            ignore_prop_name=self.ignore_prop_name,
             apply_modifiers_with_shapekeys=self.enable_apply_modifiers_with_shapekeys,
             duplicate=False,
             remove_non_render_mod=True
@@ -47,13 +56,8 @@ class OBJECT_OT_merge_children_grouped_for_exporter_addon(bpy.types.Operator):
 
 def register():
     bpy.utils.register_class(OBJECT_OT_merge_children_grouped_for_exporter_addon)
-    bpy.types.WindowManager.mizore_automerge_temp_ignore_collection = PointerProperty(
-        type=bpy.types.Collection,
-        name='Ignore Collection'
-    )
 
 
 def unregister():
     bpy.utils.unregister_class(OBJECT_OT_merge_children_grouped_for_exporter_addon)
-    del bpy.types.WindowManager.mizore_automerge_temp_ignore_collection
 

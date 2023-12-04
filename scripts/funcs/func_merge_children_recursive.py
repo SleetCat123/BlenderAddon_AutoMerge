@@ -19,7 +19,7 @@
 import bpy
 from .. import consts
 from .func_apply_modifier_and_merge_selections import apply_modifier_and_merge_selections
-from .utils import func_object_utils, func_collection_utils
+from .utils import func_object_utils, func_collection_utils, func_custom_props_utils
 
 
 def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: bool, remove_non_render_mod: bool):
@@ -32,13 +32,13 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
 
     merge_target_collection = func_collection_utils.find_collection(consts.PARENTS_GROUP_NAME)
     dont_merge_collection = func_collection_utils.find_collection(consts.DONT_MERGE_TO_PARENT_GROUP_NAME)
+    dont_merge_objects = set(func_custom_props_utils.get_objects_prop_is_true(consts.DONT_MERGE_TO_PARENT_GROUP_NAME))
+    if dont_merge_collection:
+        dont_merge_objects = dont_merge_objects | set(dont_merge_collection.objects)
 
     children = func_object_utils.get_children_objects(obj)
     for child in children:
         # print("call:"+child.name)
-        if dont_merge_collection and child.name in dont_merge_collection.objects:
-            if not merge_target_collection or child.name not in dont_merge_collection.objects:
-                continue
         func_object_utils.set_active_object(child)
         b = merge_children_recursive(operator=operator,
                                      context=context,
@@ -53,7 +53,7 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
 
     func_object_utils.deselect_all_objects()
     for child in children:
-        if dont_merge_collection and child.name in dont_merge_collection.objects:
+        if child.name in dont_merge_objects:
             print(f"ignore: {child}")
         else:
             func_object_utils.select_object(child, True)

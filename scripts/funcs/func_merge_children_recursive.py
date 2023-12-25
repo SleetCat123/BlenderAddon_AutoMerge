@@ -19,6 +19,7 @@
 import bpy
 from .. import consts
 from .func_apply_modifier_and_merge_selections import apply_modifier_and_merge_selections
+from . import func_merge_vertexes
 from .utils import func_object_utils, func_collection_utils, func_custom_props_utils
 
 
@@ -70,6 +71,13 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
     )
     if not b:
         print("!!! Failed - merge_children_recursive B")
+    
+    func_merge_vertexes.merge_vertexes(
+        objects=[obj],
+        threshold=0.0001,
+        remove_merged_group=False,
+    )
+
     func_object_utils.select_objects(func_object_utils.get_children_objects(obj), True)
     print("result: " + str(bpy.context.selected_objects))
     print("")

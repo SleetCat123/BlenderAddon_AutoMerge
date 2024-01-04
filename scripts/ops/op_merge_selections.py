@@ -43,7 +43,7 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "duplicate")
-        layout.prop(self, "ignore_armature")
+        layout.prop(self, "remove_non_render_mod")
         if link_with_ShapeKeysUtil.shapekey_util_is_found():
             layout.separator()
             box = layout.box()

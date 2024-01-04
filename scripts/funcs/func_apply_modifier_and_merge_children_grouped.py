@@ -38,12 +38,7 @@ def apply_modifier_and_merge_children_grouped(self,
 
     # コレクションを取得
     collection = func_collection_utils.find_collection(consts.PARENTS_GROUP_NAME)
-    if not collection:
-        # コレクションがなかったら処理中断
-        print(f"Collection [{consts.PARENTS_GROUP_NAME}] is not found")
-        # 成功扱いにしたいのでTrueを返しておく
-        return True
-    if collection.name not in bpy.context.scene.collection.children.keys():
+    if collection and collection.name not in bpy.context.scene.collection.children.keys():
         # コレクションをLinkする。
         # Unlink状態のコレクションでもPythonからは参照できてしまう場合があるようなので、確実にLink状態になるようにしておく
         bpy.context.scene.collection.children.link(collection)
@@ -62,10 +57,12 @@ def apply_modifier_and_merge_children_grouped(self,
 
     # ------------------
     # 結合処理
-    merge_group_objects = (
-            set(collection.objects) |
-            set(func_custom_props_utils.get_objects_prop_is_true(consts.PARENTS_GROUP_NAME))
-    )
+    merge_group_objects = set()
+    if collection:
+        merge_group_objects = set(collection.objects)
+    prop_true_objects =  set(func_custom_props_utils.get_objects_prop_is_true(consts.PARENTS_GROUP_NAME, targets=targets))
+    merge_group_objects = merge_group_objects | prop_true_objects
+
     merge_targets = merge_group_objects & set(targets)
     # merge_targets=targets
 

@@ -17,6 +17,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
+import bmesh
 from bpy.props import BoolProperty
 from .. import consts
 from ..funcs.utils import func_object_utils
@@ -37,21 +38,27 @@ def merge_vertexes(objects, threshold: float = 0.0001, remove_merged_group: bool
         func_object_utils.set_active_object(obj)
         temp_mode = obj.mode
         bpy.ops.object.mode_set(mode='EDIT')
-        verts = obj.data.vertices
+        bm = bmesh.from_edit_mesh(obj.data)
+        verts = bm.verts
         # 頂点グループごとに処理
         for group in target_groups:
-            print("Merge Vertexes: [" + obj.name + "] - [" + group.name + "]")
-            # 頂点の選択を解除
+            print("Merge Vertexes: [" + obj.name + "].[" + group.name + "]")
+            count = 0
             for vert in verts:
-                if vert.select:
+                try:
+                    weight = group.weight(vert.index)
+                except RuntimeError as e:
+                    weight = 0.0
+                if weight == 1.0:
+                # 頂点グループの値が1.0の頂点を選択
+                    vert.select = True
+                    count += 1
+                else:
                     vert.select = False
-            # 頂点グループの値が1.0の頂点を選択
-            for vert in verts:
-                for vgroup in vert.groups:
-                    if vgroup.group == group.index and vgroup.weight == 1.0:
-                        vert.select = True
-                        break
-            bpy.ops.mesh.remove_doubles(threshold=threshold)
+            bm.select_flush(True)
+            print(f"{count} verts selected")
+            if 2 <= count:
+                bpy.ops.mesh.remove_doubles(threshold=threshold)
             if remove_merged_group:
                 # 頂点グループを削除
                 obj.vertex_groups.remove(group)

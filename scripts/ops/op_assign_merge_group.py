@@ -52,8 +52,8 @@ class OBJECT_OT_specials_assign_dont_merge_to_parent_group(bpy.types.Operator):
     assign: bpy.props.BoolProperty(name="Assign", default=True)
 
     def execute(self, context):
-        func_collection_utils.assign_object_group(group_name=consts.DONT_MERGE_TO_PARENT_GROUP_NAME, assign=self.assign)
-        func_collection_utils.hide_collection(context=context, group_name=consts.DONT_MERGE_TO_PARENT_GROUP_NAME, hide=True)
+        # func_collection_utils.assign_object_group(group_name=consts.DONT_MERGE_TO_PARENT_GROUP_NAME, assign=self.assign)
+        # func_collection_utils.hide_collection(context=context, group_name=consts.DONT_MERGE_TO_PARENT_GROUP_NAME, hide=True)
         func_custom_props_utils.assign_bool_prop(
             target=bpy.context.selected_objects,
             prop_name=consts.DONT_MERGE_TO_PARENT_GROUP_NAME,

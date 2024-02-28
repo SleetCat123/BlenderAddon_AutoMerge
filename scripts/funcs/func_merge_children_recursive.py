@@ -52,34 +52,79 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
     # EMPTYをメッシュに変換した場合など、オブジェクトが消えていることがあるため再取得
     children = func_object_utils.get_children_objects(obj)
 
-    func_object_utils.deselect_all_objects()
+    target_children = []
+    variants = []
     for child in children:
         if child.name in dont_merge_objects:
             print(f"ignore: {child}")
         else:
-            func_object_utils.select_object(child, True)
-    func_object_utils.select_object(obj, True)
-    func_object_utils.set_active_object(obj)
-    print("! merge to:" + obj.name)
-    print("children: " + str(children))
-    print(str(bpy.context.selected_objects))
-    b = apply_modifier_and_merge_selections(
-        operator=operator,
-        context=context,
-        apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
-        remove_non_render_mod=remove_non_render_mod
-    )
-    if not b:
-        print("!!! Failed - merge_children_recursive B")
-    
-    func_merge_vertexes.merge_vertexes(
-        objects=[obj],
-        threshold=0.0001,
-        remove_merged_group=False,
-    )
+            target_children.append(child)
+            if child.name.startswith(consts.MULTIPLE_VARIANTS_PREFIX):
+                variants.append(child)
+    b = True
+    results = []
+    if variants and len(variants) > 1:
+        print("variants: " + str(variants))
+        for i, variant in enumerate(variants):
+            print("variant: " + variant.name)
+            func_object_utils.deselect_all_objects()
+            func_object_utils.select_objects(target_children, True)
+            func_object_utils.select_objects(variants, False)
+            func_object_utils.select_object(variant, True)
+            func_object_utils.select_object(obj, True)
+            func_object_utils.set_active_object(obj)
+            dup_targets = func_object_utils.duplicate_object()
+            dup_obj = func_object_utils.get_active_object()
+            dup_obj.name = variant.name[len(consts.MULTIPLE_VARIANTS_PREFIX):]
+            dup_targets.remove(dup_obj)
+            print("! merge to:" + dup_obj.name)
+            print("children: " + str(dup_targets))
+            print(str(bpy.context.selected_objects))
+            b = apply_modifier_and_merge_selections(
+                operator=operator,
+                context=context,
+                apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
+                remove_non_render_mod=remove_non_render_mod
+            )
+            func_merge_vertexes.merge_vertexes(
+                objects=[dup_obj],
+                threshold=0.0001,
+                remove_merged_group=False,
+            )
+            results.extend(func_object_utils.get_children_objects(dup_obj))
+            results.append(dup_obj)
+            if not b:
+                print("!!! Failed - merge_children_recursive B  " + variant.name)
+                break
+        # オリジナルを削除
+        func_object_utils.remove_object(obj)
+        func_object_utils.remove_objects(target_children)
+    else:
+        func_object_utils.deselect_all_objects()
+        func_object_utils.select_objects(target_children, True)
+        func_object_utils.select_object(obj, True)
+        func_object_utils.set_active_object(obj)
+        print("! merge to:" + obj.name)
+        print("children: " + str(children))
+        print(str(bpy.context.selected_objects))
+        b = apply_modifier_and_merge_selections(
+            operator=operator,
+            context=context,
+            apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
+            remove_non_render_mod=remove_non_render_mod
+        )
+        if not b:
+            print("!!! Failed - merge_children_recursive B")
 
-    func_object_utils.select_objects(func_object_utils.get_children_objects(obj), True)
-    print("result: " + str(bpy.context.selected_objects))
+        func_merge_vertexes.merge_vertexes(
+            objects=[obj],
+            threshold=0.0001,
+            remove_merged_group=False,
+        )
+        results.extend(func_object_utils.get_children_objects(obj))
+
+    func_object_utils.select_objects(results, True)
+    print("result: " + str(results))
     print("")
     return b
 

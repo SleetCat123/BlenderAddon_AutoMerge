@@ -97,7 +97,7 @@ def apply_modifier_and_merge_children_grouped(self,
         func_object_utils.set_active_object(merge_root_parent)
         func_object_utils.select_children_recursive()
 
-        # マージ対象オブジェクトをresultsから消しておく（あとで親オブジェクトだけ再追加する）
+        # マージ対象オブジェクトをresultsから消しておく
         results = list(set(results) - set(bpy.context.selected_objects))
 
         # 処理から除外するオブジェクトの選択を外す

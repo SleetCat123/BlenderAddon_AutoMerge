@@ -25,6 +25,7 @@ APPLY_AS_SHAPEKEY_NAME = "%AS%"  # モディファイア名が%AS%で始まっ�
 FORCE_APPLY_MODIFIER_PREFIX = "%A%"  # モディファイア名が"%A%"で始まっているならArmatureなどの対象外モディファイアでも強制的に適用
 FORCE_KEEP_MODIFIER_PREFIX = "%KEEP%"  # モディファイア名が"%KEEP%"で始まっているならモディファイアを適用せずに処理を続行する
 JOIN_AS_SHAPEKEY_PREFIX = "%SHAPE%"  # オブジェクト名が"%SHAPE%"で始まっているならそのオブジェクトをJoin as shapeで結合する
+MULTIPLE_VARIANTS_PREFIX = "%V%"  # オブジェクト名が"%V%"で始まっているなら複数のバリアントが存在するとみなす
 MERGE_VERTEX_GROUP_PREFIX = "%M%"  # 頂点グループ名が"%M%"で始まっているならマージ対象の頂点グループとみなす
 
 DESC = ".desc"

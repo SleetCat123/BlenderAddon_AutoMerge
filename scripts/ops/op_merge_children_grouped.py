@@ -58,7 +58,11 @@ class OBJECT_OT_specials_merge_children_grouped(bpy.types.Operator):
     def execute(self, context):
         addon_prefs = func_package_utils.get_addon_prefs()
         b = func_apply_modifier_and_merge_children_grouped.apply_modifier_and_merge_children_grouped(
-            self, context, None, addon_prefs.apply_modifiers_with_shapekeys,
+            self=self, 
+            context=context,
+            ignore_collection=None,
+            ignore_prop_name=None,
+            apply_modifiers_with_shapekeys= addon_prefs.apply_modifiers_with_shapekeys,
             duplicate=self.duplicate,
             remove_non_render_mod=self.remove_non_render_mod,
         )

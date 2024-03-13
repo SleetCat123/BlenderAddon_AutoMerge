@@ -31,7 +31,8 @@ def apply_modifier_and_merge_children_grouped(self,
                                               remove_non_render_mod: bool):
     # 処理から除外するオブジェクトの選択を外す
     func_collection_utils.deselect_collection(ignore_collection)
-    func_custom_props_utils.select_if_prop_is_true(prop_name=ignore_prop_name, select=False)
+    if ignore_prop_name:
+        func_custom_props_utils.select_if_prop_is_true(prop_name=ignore_prop_name, select=False)
 
     print(
         "xxxxxx Targets xxxxxx\n" + '\n'.join([obj.name for obj in bpy.context.selected_objects]) + "\nxxxxxxxxxxxxxxx")

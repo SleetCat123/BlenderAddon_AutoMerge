@@ -55,7 +55,7 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
     target_children = []
     variants = []
     for child in children:
-        if child.name in dont_merge_objects:
+        if child in dont_merge_objects:
             print(f"ignore: {child}")
         else:
             target_children.append(child)

@@ -17,9 +17,10 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
+import traceback
 from bpy.props import BoolProperty
 from .. import consts, link_with_ShapeKeysUtil
-from ..funcs import func_merge_children_recursive
+from ..funcs import func_merge_children_recursive_re
 from ..funcs.utils import func_object_utils, func_ui_utils, func_package_utils
 
 
@@ -29,20 +30,18 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
     bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
-    duplicate: BoolProperty(
-        name="Duplicate",
-        default=False,
-        description=bpy.app.translations.pgettext(consts.KEY_DUPLICATE)
-    )
     remove_non_render_mod: BoolProperty(
         name="Remove Non-Render Modifiers",
         default=True,
         description=bpy.app.translations.pgettext(consts.KEY_REMOVE_NON_RENDER_MOD)
     )
+    
+    @classmethod
+    def poll(cls, context):
+        return bpy.context.selected_objects
 
     def draw(self, context):
         layout = self.layout
-        layout.prop(self, "duplicate")
         layout.prop(self, "remove_non_render_mod")
         if link_with_ShapeKeysUtil.shapekey_util_is_found():
             layout.separator()
@@ -56,35 +55,29 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
             col.prop(addon_prefs, "apply_modifiers_with_shapekeys")
 
     def execute(self, context):
-        print("apply_modifier_and_merge_children")
-
-        # rootを取得
-        root_objects = func_object_utils.get_selected_root_objects()
-
-        # 結合処理
-        addon_prefs = func_package_utils.get_addon_prefs()
-        result = []
-        for obj in root_objects:
-            func_object_utils.deselect_all_objects()
-            func_object_utils.set_active_object(obj)
-            if self.duplicate:
-                # 対象オブジェクトを複製
-                children_recursive = func_object_utils.get_children_recursive([obj])
-                func_object_utils.duplicate_object(children_recursive)
-
-            b = func_merge_children_recursive.merge_children_recursive(
-                operator=self,
-                context=context,
-                apply_modifiers_with_shapekeys=addon_prefs.apply_modifiers_with_shapekeys,
-                remove_non_render_mod=self.remove_non_render_mod,
+        settings = func_merge_children_recursive_re.Settings()
+        settings.remove_non_render_mod = self.remove_non_render_mod
+        try:
+            # rootを取得
+            root_objects = func_object_utils.get_selected_root_objects()
+            root_objects_names = [root.name for root in root_objects]
+            for root in root_objects:
+                func_object_utils.set_active_object(root)
+                func_merge_children_recursive_re.merge_children_recursive(
+                    operator=self,
+                    settings=settings
                 )
-            result.append(func_object_utils.get_active_object())
-            if not b:
-                return {'CANCELLED'}
-
-        func_object_utils.select_objects(result, True)
-        print("finished")
-        return {'FINISHED'}
+            for root_name in root_objects_names:
+                root = bpy.data.objects.get(root_name)
+                func_object_utils.select_children_recursive(root)
+            return {'FINISHED'}
+        except Exception as e:
+            bpy.ops.ed.undo_push(message = "Restore point")
+            bpy.ops.ed.undo()
+            bpy.ops.ed.undo_push(message = "Restore point")
+            traceback.print_exc()
+            self.report({'ERROR'}, str(e))
+            return {'CANCELLED'}
 
 
 def register():

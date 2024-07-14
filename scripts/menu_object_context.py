@@ -23,7 +23,6 @@ from .ops import (
     op_merge_selections,
     op_assign_merge_group,
     op_add_vertex_group,
-    op_merge_test
 )
 from . import consts
 
@@ -49,9 +48,6 @@ class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
             text="Add Merge Vertex Group",
             )
         op.group_name = consts.MERGE_VERTEX_GROUP_PREFIX
-        
-        self.layout.separator()
-        self.layout.operator(op_merge_test.OBJECT_OT_automerge_merge_test.bl_idname)
 
 
 def register():

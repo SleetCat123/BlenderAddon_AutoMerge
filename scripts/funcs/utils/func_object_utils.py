@@ -34,6 +34,12 @@ def select_objects(objects, value=True):
             print(e)
 
 
+def select_objects_by_name(names, value=True):
+    for name in names:
+        obj = bpy.data.objects.get(name)
+        obj.select_set(value)
+
+
 def get_active_object():
     return bpy.context.view_layer.objects.active
 
@@ -181,6 +187,22 @@ def get_selected_root_objects():
     return root_objects
 
 
+def duplicate_objects(
+        source=None,
+        linked: bool = False,
+):
+    if source is None:
+        source = bpy.context.selected_objects
+    else:
+        deselect_all_objects()
+        select_objects(source, True)
+    print("Duplicate Source: " + str(source))
+    bpy.ops.object.duplicate(linked=linked)
+    result = bpy.context.selected_objects
+    print("Duplicate Result: " + str(result))
+    return result
+
+
 def duplicate_object(
         source=None,
         linked: bool = False,
@@ -214,3 +236,7 @@ def set_object_name(obj, name):
     obj.name = name
     if obj.data:
         obj.data.name = name
+
+def set_parent(obj, parent):
+    obj.parent = parent
+    obj.matrix_parent_inverse = parent.matrix_world.inverted()

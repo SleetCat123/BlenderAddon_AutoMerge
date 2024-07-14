@@ -3,6 +3,7 @@
 
 ##
 - add: Variants Merge機能を追加
+- change: オペレーターのDuplicate設定を廃止
 
 ## 
 - Blender 2.7系への互換性確保コードを削除。

@@ -29,11 +29,6 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
     bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
-    duplicate: BoolProperty(
-        name="Duplicate",
-        default=False,
-        description=bpy.app.translations.pgettext(consts.KEY_DUPLICATE)
-    )
     remove_non_render_mod: BoolProperty(
         name="Remove Non-Render Modifiers",
         default=True,
@@ -42,7 +37,6 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        layout.prop(self, "duplicate")
         layout.prop(self, "remove_non_render_mod")
         if link_with_ShapeKeysUtil.shapekey_util_is_found():
             layout.separator()
@@ -56,10 +50,6 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
             col.prop(addon_prefs, "apply_modifiers_with_shapekeys")
 
     def execute(self, context):
-        if self.duplicate:
-            # 対象オブジェクトを複製
-            func_object_utils.duplicate_object()
-
         addon_prefs = func_package_utils.get_addon_prefs()
         b = func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(
             operator=self,

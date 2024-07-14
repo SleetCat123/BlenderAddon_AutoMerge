@@ -82,7 +82,6 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
             print(str(bpy.context.selected_objects))
             b = apply_modifier_and_merge_selections(
                 operator=operator,
-                context=context,
                 apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
                 remove_non_render_mod=remove_non_render_mod
             )
@@ -109,7 +108,6 @@ def merge_children_recursive(operator, context, apply_modifiers_with_shapekeys: 
         print(str(bpy.context.selected_objects))
         b = apply_modifier_and_merge_selections(
             operator=operator,
-            context=context,
             apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
             remove_non_render_mod=remove_non_render_mod
         )

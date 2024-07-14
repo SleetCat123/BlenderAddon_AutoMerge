@@ -60,7 +60,6 @@ def merge_children_recursive(operator, settings: Settings):
     # オブジェクトをマージする
     apply_modifier_and_merge_selections(
         operator=operator,
-        context=None,
         apply_modifiers_with_shapekeys=settings.apply_modifiers_with_shapekeys,
         remove_non_render_mod=settings.remove_non_render_mod
     )

@@ -19,6 +19,7 @@
 import bpy
 from .. import consts
 from .func_apply_modifier_and_merge_selections import apply_modifier_and_merge_selections
+from .. variants import variants_prop
 from .utils import func_object_utils, func_custom_props_utils
 
 
@@ -26,11 +27,13 @@ class Settings:
     apply_modifiers_with_shapekeys: bool
     remove_non_render_mod: bool
     ignore_dont_merge_to_parent_group: bool # DONT_MERGE_TO_PARENT_GROUP_NAMEに属するオブジェクトを無視する
+    variants_name: str
 
     def __init__(self):
         self.apply_modifiers_with_shapekeys = True
         self.remove_non_render_mod = True
         self.ignore_dont_merge_to_parent_group = True
+        self.variants_name = ""
 
 
 def merge_children_recursive(operator, settings: Settings):
@@ -41,6 +44,17 @@ def merge_children_recursive(operator, settings: Settings):
     for child in children:
         func_object_utils.set_active_object(child)
         name = child.name
+
+        if settings.variants_name:
+            # Variants
+            prop = variants_prop.get_variants_list(child)
+            if prop and prop.variants_list:
+                # 要素がある場合のみ判定
+                if settings.variants_name not in prop.variants_list:
+                    # Variants名が一致しない場合はオブジェクトを削除
+                    func_object_utils.remove_object(child)
+                    continue
+
         merge_children_recursive(
             operator=operator,
             settings=settings
@@ -54,6 +68,8 @@ def merge_children_recursive(operator, settings: Settings):
 
     print("")
     print(f"merge_children_recursive: {target}")
+    if settings.variants_name:
+        print(f"variants_name: {settings.variants_name}")
     func_object_utils.deselect_all_objects()
     func_object_utils.set_active_object(target)
     func_object_utils.select_objects(merge_children, True)

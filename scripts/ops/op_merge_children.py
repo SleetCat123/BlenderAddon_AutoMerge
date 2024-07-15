@@ -20,6 +20,7 @@ import bpy
 import traceback
 from bpy.props import BoolProperty
 from .. import consts, link_with_ShapeKeysUtil
+from ..variants import variants_prop
 from ..funcs import func_merge_children_recursive_re
 from ..funcs.utils import func_object_utils, func_ui_utils, func_package_utils
 
@@ -30,12 +31,18 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
     bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
 
+    use_variants: BoolProperty(
+        name="Use Variants",
+        default=True,
+        description=bpy.app.translations.pgettext(consts.KEY_USE_VARIANTS)
+    )
+
     remove_non_render_mod: BoolProperty(
         name="Remove Non-Render Modifiers",
         default=True,
         description=bpy.app.translations.pgettext(consts.KEY_REMOVE_NON_RENDER_MOD)
     )
-    
+
     @classmethod
     def poll(cls, context):
         return bpy.context.selected_objects
@@ -60,13 +67,43 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         try:
             # rootを取得
             root_objects = func_object_utils.get_selected_root_objects()
-            root_objects_names = [root.name for root in root_objects]
+            root_objects_names = []
             for root in root_objects:
-                func_object_utils.set_active_object(root)
-                func_merge_children_recursive_re.merge_children_recursive(
-                    operator=self,
-                    settings=settings
-                )
+                variant_names = variants_prop.get_all_variant_names_in_children(root)
+                if self.use_variants and variant_names:
+                    variants_count = len(variant_names)
+                    print(f"{root.name} has {variants_count} variants")
+                    # variantの数だけオブジェクトと子階層を複製して結合
+                    for i, variant_name in enumerate(variant_names):
+                        print(f"variant: {variant_name}")
+                        settings.variants_name = variant_name
+                        if i == variants_count - 1:
+                            # 最後の要素は元のオブジェクトを使用
+                            root.name = root.name + "_" + variant_name
+                            root_objects_names.append(root.name)
+                            func_object_utils.set_active_object(root)
+                            func_merge_children_recursive_re.merge_children_recursive(
+                                operator=self,
+                                settings=settings
+                            )
+                        else:
+                            # ルートと子階層を複製
+                            children = func_object_utils.get_children_recursive(root)
+                            func_object_utils.duplicate_objects(children)
+                            root_copy = func_object_utils.get_active_object()
+                            root_copy.name = root.name + "_" + variant_name
+                            root_objects_names.append(root_copy.name)
+                            func_merge_children_recursive_re.merge_children_recursive(
+                                operator=self,
+                                settings=settings
+                            )
+                else:
+                    root_objects_names.append(root.name)
+                    func_object_utils.set_active_object(root)
+                    func_merge_children_recursive_re.merge_children_recursive(
+                        operator=self,
+                        settings=settings
+                    )
             for root_name in root_objects_names:
                 root = bpy.data.objects.get(root_name)
                 func_object_utils.select_children_recursive(root)

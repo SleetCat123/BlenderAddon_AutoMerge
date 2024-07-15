@@ -26,10 +26,12 @@ FORCE_APPLY_MODIFIER_PREFIX = "%A%"  # モディファイア名が"%A%"で始ま
 FORCE_KEEP_MODIFIER_PREFIX = "%KEEP%"  # モディファイア名が"%KEEP%"で始まっているならモディファイアを適用せずに処理を続行する
 JOIN_AS_SHAPEKEY_PREFIX = "%SHAPE%"  # オブジェクト名が"%SHAPE%"で始まっているならそのオブジェクトをJoin as shapeで結合する
 MULTIPLE_VARIANTS_PREFIX = "%V%"  # オブジェクト名が"%V%"で始まっているなら複数のバリアントが存在するとみなす
+MULTIPLE_VARIANTS_PROP_NAME = "MizoresExporterVariants"  # オブジェクトのカスタムプロパティ名
 MERGE_VERTEX_GROUP_PREFIX = "%M%"  # 頂点グループ名が"%M%"で始まっているならマージ対象の頂点グループとみなす
 
 DESC = ".desc"
 KEY_REMOVE_NON_RENDER_MOD = "automerge_remove_non_render_modifiers"
+KEY_USE_VARIANTS = "automerge_use_variants"
 KEY_DUPLICATE = "duplicate"
 
 

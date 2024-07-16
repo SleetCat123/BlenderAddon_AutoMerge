@@ -21,7 +21,7 @@ import traceback
 from bpy.props import BoolProperty
 from .. import consts, link_with_ShapeKeysUtil
 from ..variants import variants_prop
-from ..funcs import func_merge_children_recursive_re
+from ..funcs import func_merge_children_recursive
 from ..funcs.utils import func_object_utils, func_ui_utils, func_package_utils, func_custom_props_utils
 
 
@@ -30,6 +30,11 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
     bl_label = "Merge Children"
     bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
     bl_options = {'REGISTER', 'UNDO'}
+
+    ignore_dont_merge_to_parent_group: BoolProperty(
+        name="Ignore DONT_MERGE_TO_PARENT_GROUP",
+        default=True,
+    )
 
     use_variants: BoolProperty(
         name="Use Variants",
@@ -60,8 +65,9 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         layout = self.layout
         layout.prop(self, "use_variants")
         layout.prop(self, "remove_non_render_mod")
+
+        layout.separator()
         layout.prop(self, "only_grouped")
-        
         row = layout.row()
         row.enabled = self.only_grouped
         row.prop(self, "root_is_selected")
@@ -78,8 +84,15 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
             col.prop(addon_prefs, "apply_modifiers_with_shapekeys")
 
     def execute(self, context):
-        settings = func_merge_children_recursive_re.Settings()
+        addon_prefs = func_package_utils.get_addon_prefs()
+        settings = func_merge_children_recursive.Settings()
+        settings.apply_modifiers_with_shapekeys = addon_prefs.apply_modifiers_with_shapekeys
         settings.remove_non_render_mod = self.remove_non_render_mod
+        settings.ignore_dont_merge_to_parent_group = self.ignore_dont_merge_to_parent_group
+        print(OBJECT_OT_specials_merge_children.bl_idname)
+        print(f"apply_modifiers_with_shapekeys: {settings.apply_modifiers_with_shapekeys}")
+        print(f"remove_non_render_mod: {settings.remove_non_render_mod}")
+        print(f"ignore_dont_merge_to_parent_group: {settings.ignore_dont_merge_to_parent_group}")
         print(f"use_variants: {self.use_variants}")
         print(f"only_grouped: {self.only_grouped}")
         try:
@@ -108,7 +121,7 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
                             root.name = root.name + "_" + variant_name
                             root_objects_names.append(root.name)
                             func_object_utils.set_active_object(root)
-                            func_merge_children_recursive_re.merge_children_recursive(
+                            func_merge_children_recursive.merge_children_recursive(
                                 operator=self,
                                 settings=settings
                             )
@@ -119,14 +132,14 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
                             root_copy = func_object_utils.get_active_object()
                             root_copy.name = root.name + "_" + variant_name
                             root_objects_names.append(root_copy.name)
-                            func_merge_children_recursive_re.merge_children_recursive(
+                            func_merge_children_recursive.merge_children_recursive(
                                 operator=self,
                                 settings=settings
                             )
                 else:
                     root_objects_names.append(root.name)
                     func_object_utils.set_active_object(root)
-                    func_merge_children_recursive_re.merge_children_recursive(
+                    func_merge_children_recursive.merge_children_recursive(
                         operator=self,
                         settings=settings
                     )

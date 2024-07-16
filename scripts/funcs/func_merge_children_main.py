@@ -63,7 +63,7 @@ def merge_children_main(operator, settings_1: func_merge_children_recursive.Sett
         if settings_2.root_is_selected:
             root_objects = list(set(root_objects) & set(bpy.context.selected_objects))
     else:
-        root_objects = func_object_utils.get_selected_root_objects()
+        root_objects = func_object_utils.get_top_level_objects(bpy.context.selected_objects)
     root_objects_names = []
     for root in root_objects:
         if func_object_utils.is_hidden(root):

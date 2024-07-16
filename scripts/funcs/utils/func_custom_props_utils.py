@@ -78,7 +78,7 @@ def get_prop_root_objects(prop_name: str, targets):
             recursive(child)
         return False
 
-    targets = func_object_utils.get_root_objects(targets)
+    targets = func_object_utils.get_top_level_objects(targets)
     print(f"get_prop_root_objects targets: {prop_name} {targets}")
     for target in targets:
         recursive(target)

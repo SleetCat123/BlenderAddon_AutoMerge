@@ -126,7 +126,7 @@ def select_all_objects():
 
 
 def deselect_all_objects():
-    print("deselect_all_objects")
+    # print("deselect_all_objects")
     targets = bpy.context.scene.collection.all_objects
     for obj in targets:
         select_object(obj, False)
@@ -184,29 +184,22 @@ def remove_objects(targets=None):
         remove_object(target=obj)
 
 
-def get_selected_root_objects():
-    return get_root_objects(bpy.context.selected_objects)
-
 # targetsと子の中で最も上位階層にあるオブジェクト群を取得
-def get_root_objects(targets):
-    print("get_root_objects targets: " + str(targets))
-    not_root = []
-    root_objects = []
-    for obj in targets:
-        if obj in not_root:
-            continue
-        parent = obj
-        while True:
-            parent = parent.parent
-            if parent is None:
-                # 親以上のオブジェクトに選択中オブジェクトが存在しなければ、そのオブジェクトはrootとなる
-                root_objects.append(obj)
-                break
+def get_top_level_objects(targets):
+    print("get_top_level_objects targets: " + str(targets))
+    top_level_objects = []
+    for obj in bpy.context.selected_objects:
+        parent = obj.parent
+        is_root = True
+        while parent:
             if parent in targets:
-                not_root.append(parent)
+                is_root = False
                 break
-    print("root_objects: " + str(root_objects))
-    return root_objects
+            parent = parent.parent
+        if is_root:
+            top_level_objects.append(obj)
+    print("get_top_level_objects: " + str(top_level_objects))
+    return top_level_objects
 
 
 def duplicate_objects(

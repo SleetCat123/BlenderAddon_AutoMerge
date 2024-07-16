@@ -38,9 +38,12 @@ def apply_modifier_and_merge_selections(operator, use_shapekeys_util: bool, remo
     # リンクされたオブジェクトのモディファイアは適用できないので予めリンクを解除しておく
     bpy.ops.object.make_single_user(type='SELECTED_OBJECTS', object=True, obdata=True, material=False, animation=False)
 
+    empty_objects = []
     for i, obj in enumerate(targets):
         # MeshではないオブジェクトをMeshにする
         if obj.type == 'CURVE' or obj.type == 'SURFACE' or obj.type == 'META' or obj.type == 'FONT':
+            print(f"Convert: {obj.name} ({obj.type} -> MESH)")
+            # # Meshに変換した際、子オブジェクトの位置がずれるので一旦親子関係を解除して変換後に再設定する
             func_object_utils.deselect_all_objects()
 
             children = func_object_utils.get_children_objects(obj)
@@ -52,38 +55,13 @@ def apply_modifier_and_merge_selections(operator, use_shapekeys_util: bool, remo
             func_object_utils.set_active_object(obj)
 
             bpy.ops.object.convert(target='MESH')
-            print("Converted: " + str(obj.type))
 
             func_object_utils.select_objects(children, True)
             bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
-            # # Meshに変換した際、子オブジェクトの位置がずれるので修正をかける
-            # children = get_children(obj)
-            # for c in children:
-            #     c.matrix_parent_inverse = matrix
         elif obj.type == 'EMPTY':
-            # EMPTYなら空のMeshオブジェクトを作成する
-            func_object_utils.deselect_all_objects()
-            func_object_utils.select_object(obj, True)
-            func_object_utils.set_active_object(obj)
-
-            bpy.ops.object.add(type='MESH')
-            new_obj = bpy.context.object
-            new_obj.matrix_world = obj.matrix_world.copy()
-            new_obj.name = obj.name
-            new_obj.data.name = obj.name
-            new_obj.parent = obj.parent
-
-            children = func_object_utils.get_children_objects(obj)
-            func_object_utils.select_objects(children, True)
-            bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
-            # for c in children:
-            #     c.parent = new_obj
-            #     c.matrix_parent_inverse = new_obj.matrix_world.inverted()
-
-            if merged == obj:
-                merged = new_obj
-            targets[i] = new_obj
-            bpy.data.objects.remove(obj)
+            if len(targets) > 1:
+                # 他にマージ対象がある場合のみEMPTYをMeshに変換する
+                empty_objects.append((i, obj))
     # オブジェクト変換後の状況を反映するために選択しなおす
     func_object_utils.deselect_all_objects()
     func_object_utils.select_objects(targets, True)
@@ -128,13 +106,37 @@ def apply_modifier_and_merge_selections(operator, use_shapekeys_util: bool, remo
                                                  remove_non_render_mod=remove_non_render_mod)
         if not b:
             return False
+    
+    # EMPTYオブジェクトをMeshに変換
+    for i, obj in empty_objects:
+        print(f"Convert(NewObject): {obj.name} ({obj.type} -> MESH)")
+        # EMPTYなら空のMeshオブジェクトを作成する
+        bpy.ops.object.add(type='MESH')
+        new_obj = bpy.context.object
+        new_obj.name = obj.name
+        new_obj.data.name = obj.name
+        new_obj.parent = obj.parent
+        new_obj.matrix_world = obj.matrix_world.copy()
+
+        children = func_object_utils.get_children_objects(obj)
+        func_object_utils.select_objects(children, True)
+        bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
+
+        if merged == obj:
+            merged = new_obj
+        targets[i] = new_obj
+        bpy.data.objects.remove(obj)
+
+    if merged.type != 'MESH':
+        print(f"merge target object is not mesh: {merged}")
+        return False
 
     # オブジェクトを結合
     func_object_utils.deselect_all_objects()
     func_object_utils.select_object(merged, True)
     func_object_utils.set_active_object(merged)
-    print(f"target: {merged}")
-    if targets and len(targets) > 1:
+    print(f"target: {merged} <- merge <- {targets}")
+    if len(targets) > 1:
         targets.sort(key=lambda x: x.name)
         print("------ Merge ------\n" + '\n'.join([f"{obj.name}   {obj}" for obj in targets]) + "\n-------------------")
         join_as_shape_meshes = []

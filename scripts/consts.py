@@ -21,11 +21,12 @@ import bpy
 
 PARENTS_GROUP_NAME = "MergeGroup"  # マージ先となるオブジェクトが属するグループの名前
 DONT_MERGE_TO_PARENT_GROUP_NAME = "DontMergeToParent"  # このグループに属するオブジェクトが他オブジェクトにマージされることはない（Merge Selectionの場合はマージされる）
-APPLY_AS_SHAPEKEY_NAME = "%AS%"  # モディファイア名が%AS%で始まっているならApply as shapekey
 FORCE_APPLY_MODIFIER_PREFIX = "%A%"  # モディファイア名が"%A%"で始まっているならArmatureなどの対象外モディファイアでも強制的に適用
 FORCE_KEEP_MODIFIER_PREFIX = "%KEEP%"  # モディファイア名が"%KEEP%"で始まっているならモディファイアを適用せずに処理を続行する
+
+APPLY_AS_SHAPEKEY_NAME = "%AS%"  # モディファイア名が%AS%で始まっているならApply as shapekey
 JOIN_AS_SHAPEKEY_PREFIX = "%SHAPE%"  # オブジェクト名が"%SHAPE%"で始まっているならそのオブジェクトをJoin as shapeで結合する
-MULTIPLE_VARIANTS_PREFIX = "%V%"  # オブジェクト名が"%V%"で始まっているなら複数のバリアントが存在するとみなす
+
 MULTIPLE_VARIANTS_PROP_NAME = "MizoresExporterVariants"  # オブジェクトのカスタムプロパティ名
 MERGE_VERTEX_GROUP_PREFIX = "%M%"  # 頂点グループ名が"%M%"で始まっているならマージ対象の頂点グループとみなす
 

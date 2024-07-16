@@ -189,6 +189,7 @@ def get_selected_root_objects():
 
 # targetsと子の中で最も上位階層にあるオブジェクト群を取得
 def get_root_objects(targets):
+    print("get_root_objects targets: " + str(targets))
     not_root = []
     root_objects = []
     for obj in targets:
@@ -197,7 +198,6 @@ def get_root_objects(targets):
         parent = obj
         while True:
             parent = parent.parent
-            print(parent)
             if parent is None:
                 # 親以上のオブジェクトに選択中オブジェクトが存在しなければ、そのオブジェクトはrootとなる
                 root_objects.append(obj)
@@ -205,6 +205,7 @@ def get_root_objects(targets):
             if parent in targets:
                 not_root.append(parent)
                 break
+    print("root_objects: " + str(root_objects))
     return root_objects
 
 
@@ -261,3 +262,15 @@ def set_object_name(obj, name):
 def set_parent(obj, parent):
     obj.parent = parent
     obj.matrix_parent_inverse = parent.matrix_world.inverted()
+
+def hide_unselected_objects():
+    for obj in bpy.context.scene.collection.all_objects:
+        if not obj.select_get():
+            obj.hide_set(True)
+
+def is_hidden(obj: bpy.types.Object):
+    return obj.hide_viewport or obj.hide_get()
+
+def force_unhide(obj: bpy.types.Object):
+    obj.hide_viewport = False
+    obj.hide_set(False)

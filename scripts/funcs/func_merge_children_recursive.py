@@ -24,27 +24,24 @@ from .utils import func_object_utils, func_custom_props_utils
 
 
 class Settings:
-    apply_modifiers_with_shapekeys: bool
+    use_shapekeys_util: bool
     remove_non_render_mod: bool
     ignore_dont_merge_to_parent_group: bool # DONT_MERGE_TO_PARENT_GROUP_NAMEに属するオブジェクトを無視する
     variants_name: str
 
     def __init__(self):
-        self.apply_modifiers_with_shapekeys = True
+        self.use_shapekeys_util = True
         self.remove_non_render_mod = True
         self.ignore_dont_merge_to_parent_group = True
         self.variants_name = ""
 
 
-def merge_children_recursive(operator, settings: Settings):
-    target = func_object_utils.get_active_object()
+def merge_children_recursive(operator, settings: Settings, target: bpy.types.Object):
     func_object_utils.deselect_all_objects()
     children = func_object_utils.get_children_objects(target)
     merge_children = []
     for child in children:
-        func_object_utils.set_active_object(child)
         name = child.name
-
         if settings.variants_name:
             # Variants
             prop = variants_prop.get_variants_list(child)
@@ -57,7 +54,8 @@ def merge_children_recursive(operator, settings: Settings):
 
         merge_children_recursive(
             operator=operator,
-            settings=settings
+            settings=settings,
+            target=child
         )
         # 再帰処理後に子オブジェクトが変化している可能性があるため再取得
         child_obj = bpy.data.objects[name]
@@ -66,6 +64,10 @@ def merge_children_recursive(operator, settings: Settings):
         else:
             merge_children.append(child_obj)
 
+    if func_object_utils.is_hidden(target):
+        # オブジェクトが非表示の場合はマージしない
+        return
+    
     print("")
     print(f"merge_children_recursive: {target}")
     if settings.variants_name:
@@ -76,7 +78,7 @@ def merge_children_recursive(operator, settings: Settings):
     # オブジェクトをマージする
     apply_modifier_and_merge_selections(
         operator=operator,
-        apply_modifiers_with_shapekeys=settings.apply_modifiers_with_shapekeys,
+        use_shapekeys_util=settings.use_shapekeys_util,
         remove_non_render_mod=settings.remove_non_render_mod
     )
     

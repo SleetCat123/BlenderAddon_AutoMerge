@@ -19,10 +19,10 @@
 import bpy
 import traceback
 from bpy.props import BoolProperty
-from .. import consts, link_with_ShapeKeysUtil
-from ..variants import variants_prop
-from ..funcs import func_merge_children_recursive
-from ..funcs.utils import func_object_utils, func_ui_utils, func_package_utils, func_custom_props_utils
+from .. import consts
+from ..link import link_with_ShapeKeysUtil
+from ..funcs import func_merge_children_recursive, func_merge_children_main
+from ..funcs.utils import func_ui_utils, func_package_utils
 
 
 class OBJECT_OT_specials_merge_children(bpy.types.Operator):
@@ -32,11 +32,11 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     ignore_dont_merge_to_parent_group: BoolProperty(
-        name="Ignore DONT_MERGE_TO_PARENT_GROUP",
+        name="Ignore " + consts.DONT_MERGE_TO_PARENT_GROUP_NAME + " Property",
         default=True,
     )
 
-    use_variants: BoolProperty(
+    use_variants_merge: BoolProperty(
         name="Use Variants",
         default=True,
         description=bpy.app.translations.pgettext(consts.KEY_USE_VARIANTS)
@@ -48,6 +48,11 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         description=bpy.app.translations.pgettext(consts.KEY_REMOVE_NON_RENDER_MOD)
     )
 
+    reparent_if_object_hidden: BoolProperty(
+        name="Reparent If Object Hidden",
+        default=True,
+    )
+
     only_grouped: BoolProperty(
         name="Only Grouped",
         default=False,
@@ -57,14 +62,22 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         default=False,
     )
 
+    restore_selection: BoolProperty(
+        name="Restore Selection",
+        default=False,
+    )
+
     @classmethod
     def poll(cls, context):
         return bpy.context.selected_objects
 
     def draw(self, context):
         layout = self.layout
-        layout.prop(self, "use_variants")
+        layout.prop(self, "use_variants_merge")
+        layout.prop(self, "reparent_if_object_hidden")
         layout.prop(self, "remove_non_render_mod")
+        layout.prop(self, "ignore_dont_merge_to_parent_group")
+        layout.prop(self, "restore_selection")
 
         layout.separator()
         layout.prop(self, "only_grouped")
@@ -84,68 +97,23 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
             col.prop(addon_prefs, "apply_modifiers_with_shapekeys")
 
     def execute(self, context):
-        addon_prefs = func_package_utils.get_addon_prefs()
-        settings = func_merge_children_recursive.Settings()
-        settings.apply_modifiers_with_shapekeys = addon_prefs.apply_modifiers_with_shapekeys
-        settings.remove_non_render_mod = self.remove_non_render_mod
-        settings.ignore_dont_merge_to_parent_group = self.ignore_dont_merge_to_parent_group
-        print(OBJECT_OT_specials_merge_children.bl_idname)
-        print(f"apply_modifiers_with_shapekeys: {settings.apply_modifiers_with_shapekeys}")
-        print(f"remove_non_render_mod: {settings.remove_non_render_mod}")
-        print(f"ignore_dont_merge_to_parent_group: {settings.ignore_dont_merge_to_parent_group}")
-        print(f"use_variants: {self.use_variants}")
-        print(f"only_grouped: {self.only_grouped}")
         try:
-            # rootを取得
-            if self.only_grouped:
-                root_objects = func_custom_props_utils.get_prop_root_objects(
-                    prop_name=consts.PARENTS_GROUP_NAME,
-                    targets=bpy.context.selected_objects
-                )
-                if self.root_is_selected:
-                    root_objects = list(set(root_objects) & set(bpy.context.selected_objects))
-            else:
-                root_objects = func_object_utils.get_selected_root_objects()
-            root_objects_names = []
-            for root in root_objects:
-                variant_names = variants_prop.get_all_variant_names_in_children(root)
-                if self.use_variants and variant_names:
-                    variants_count = len(variant_names)
-                    print(f"{root.name} has {variants_count} variants")
-                    # variantの数だけオブジェクトと子階層を複製して結合
-                    for i, variant_name in enumerate(variant_names):
-                        print(f"variant: {variant_name}")
-                        settings.variants_name = variant_name
-                        if i == variants_count - 1:
-                            # 最後の要素は元のオブジェクトを使用
-                            root.name = root.name + "_" + variant_name
-                            root_objects_names.append(root.name)
-                            func_object_utils.set_active_object(root)
-                            func_merge_children_recursive.merge_children_recursive(
-                                operator=self,
-                                settings=settings
-                            )
-                        else:
-                            # ルートと子階層を複製
-                            children = func_object_utils.get_children_recursive(root)
-                            func_object_utils.duplicate_objects(children)
-                            root_copy = func_object_utils.get_active_object()
-                            root_copy.name = root.name + "_" + variant_name
-                            root_objects_names.append(root_copy.name)
-                            func_merge_children_recursive.merge_children_recursive(
-                                operator=self,
-                                settings=settings
-                            )
-                else:
-                    root_objects_names.append(root.name)
-                    func_object_utils.set_active_object(root)
-                    func_merge_children_recursive.merge_children_recursive(
-                        operator=self,
-                        settings=settings
-                    )
-            for root_name in root_objects_names:
-                root = bpy.data.objects.get(root_name)
-                func_object_utils.select_children_recursive(root)
+            addon_prefs = func_package_utils.get_addon_prefs()
+            settings_1 = func_merge_children_recursive.Settings()
+            settings_1.use_shapekeys_util = addon_prefs.apply_modifiers_with_shapekeys
+            settings_1.remove_non_render_mod = self.remove_non_render_mod
+            settings_1.ignore_dont_merge_to_parent_group = self.ignore_dont_merge_to_parent_group
+            settings_2 = func_merge_children_main.Settings()
+            settings_2.use_variants_merge = self.use_variants_merge
+            settings_2.only_grouped = self.only_grouped
+            settings_2.root_is_selected = self.root_is_selected
+            settings_2.restore_selection = self.restore_selection
+            settings_2.reparent_if_object_hidden = self.reparent_if_object_hidden
+            func_merge_children_main.merge_children_main(
+                operator=self,
+                settings_1=settings_1,
+                settings_2=settings_2
+            )
             return {'FINISHED'}
         except Exception as e:
             bpy.ops.ed.undo_push(message = "Restore point")

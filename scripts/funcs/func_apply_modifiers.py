@@ -21,27 +21,24 @@ from .. import consts
 from .utils import func_object_utils
 
 
-def apply_modifiers(operator, apply_modifiers_with_shapekeys: bool, remove_non_render_mod: bool):
+def apply_modifiers(operator, use_shapekeys_util: bool, remove_non_render_mod: bool):
     obj = func_object_utils.get_active_object()
     # オブジェクトのモディファイアを適用
     if obj.data.shape_keys and len(obj.data.shape_keys.key_blocks) != 0:
         print(f"{obj.name} has shapekey ({len(obj.data.shape_keys.key_blocks)})")
         # オブジェクトにシェイプキーがあったら
-        succeed_import = False
-        if apply_modifiers_with_shapekeys:
+        if use_shapekeys_util:
             try:
                 # ShapeKeysUtil連携
                 # ShapeKeysUtilが導入されていたらシェイプキーつきオブジェクトでもモディファイア適用
-                b = bpy.ops.object.shapekeys_util_apply_mod_with_shapekeys_automerge()
-                succeed_import = True
-                if 'FINISHED' not in b:
-                    return False
+                bpy.ops.object.shapekeys_util_apply_mod_with_shapekeys_automerge()
             except AttributeError:
+                obj.modifiers.clear()
                 t = "!!! Failed to load ShapeKeysUtil !!! - on apply modifier"
                 print(t)
                 operator.report({'ERROR'}, t)
-        if not apply_modifiers_with_shapekeys or not succeed_import:
-            # オブジェクトにシェイプキーが存在するなら適用せずモディファイアを削除
+        else:
+            # シェイプキーがある場合はモディファイアを適用せずにスキップ
             obj.modifiers.clear()
             operator.report({'INFO'}, "[" + obj.name + "] has shape key. apply modifier was skipped.")
     else:
@@ -65,7 +62,7 @@ def apply_modifiers(operator, apply_modifiers_with_shapekeys: bool, remove_non_r
                     # シェイプキーが追加された影響で通常のApply Modifierが動作しなくなるので関数をリスタート
                     return apply_modifiers(
                         operator=operator,
-                        apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
+                        use_shapekeys_util=use_shapekeys_util,
                         remove_non_render_mod=remove_non_render_mod
                     )
                 except RuntimeError:

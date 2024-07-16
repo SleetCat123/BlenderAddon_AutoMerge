@@ -23,7 +23,7 @@ from . import func_apply_modifiers
 from .utils import func_object_utils
 
 
-def apply_modifier_and_merge_selections(operator, apply_modifiers_with_shapekeys: bool, remove_non_render_mod: bool):
+def apply_modifier_and_merge_selections(operator, use_shapekeys_util: bool, remove_non_render_mod: bool):
     print("apply_modifier_and_merge_selections")
     mode_temp = None
     if bpy.context.object is not None:
@@ -124,7 +124,7 @@ def apply_modifier_and_merge_selections(operator, apply_modifiers_with_shapekeys
         func_object_utils.set_active_object(obj)
         # オブジェクトの種類がメッシュならモディファイアを適用
         b = func_apply_modifiers.apply_modifiers(operator=operator,
-                                                 apply_modifiers_with_shapekeys=apply_modifiers_with_shapekeys,
+                                                 use_shapekeys_util=use_shapekeys_util,
                                                  remove_non_render_mod=remove_non_render_mod)
         if not b:
             return False

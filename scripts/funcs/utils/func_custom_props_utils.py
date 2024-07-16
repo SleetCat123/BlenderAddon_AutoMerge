@@ -67,7 +67,7 @@ def get_prop_root_objects(prop_name: str, targets):
     result = []
 
     def recursive(obj: bpy.types.Object):
-        print(obj)
+        print(f"get_prop_root_objects.recursive: {obj}")
         print(f"children: {children_name_table[obj.name]}")
         if prop_is_true(obj, prop_name):
             print(f"Has prop: {obj}")

@@ -21,7 +21,6 @@ from .funcs.utils import func_package_utils
 from .consts import DESC, PARENTS_GROUP_NAME, KEY_DUPLICATE, KEY_REMOVE_NON_RENDER_MOD
 from .ops.op_merge_selections import OBJECT_OT_specials_merge_selections as merge_selections
 from .ops.op_merge_children import OBJECT_OT_specials_merge_children as merge_children
-from .ops.op_merge_children_grouped import OBJECT_OT_specials_merge_children_grouped as merge_children_grouped
 from .ops.op_assign_merge_group import OBJECT_OT_specials_assign_merge_group as assing_merge_group
 
 
@@ -38,7 +37,7 @@ translations_dict = {
 
         ("*", merge_children.bl_idname + DESC): "Merge child objects into parent objects",
 
-        ("*", merge_children_grouped.bl_idname + DESC):
+        ("*", merge_children.bl_idname + "_grouped" + DESC):
             f"Merge child objects of selected objects assigned to the \"{PARENTS_GROUP_NAME}\" collection",
 
         ("*", assing_merge_group.bl_idname + DESC):
@@ -59,7 +58,7 @@ translations_dict = {
 
         ("*", merge_children.bl_idname + DESC): "オブジェクトの子オブジェクトをマージします",
 
-        ("*", merge_children_grouped.bl_idname + DESC):
+        ("*", merge_children.bl_idname + "_grouped" + DESC):
             "選択中のオブジェクトのうち、\n"
             f"コレクション\"{PARENTS_GROUP_NAME}\"に属するものに対し、それぞれ子階層以下にあるオブジェクトをマージします",
 

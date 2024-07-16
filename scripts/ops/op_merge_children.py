@@ -103,12 +103,12 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
             settings_1.use_shapekeys_util = addon_prefs.apply_modifiers_with_shapekeys
             settings_1.remove_non_render_mod = self.remove_non_render_mod
             settings_1.ignore_dont_merge_to_parent_group = self.ignore_dont_merge_to_parent_group
+            settings_1.reparent_if_object_hidden = self.reparent_if_object_hidden
             settings_2 = func_merge_children_main.Settings()
             settings_2.use_variants_merge = self.use_variants_merge
             settings_2.only_grouped = self.only_grouped
             settings_2.root_is_selected = self.root_is_selected
             settings_2.restore_selection = self.restore_selection
-            settings_2.reparent_if_object_hidden = self.reparent_if_object_hidden
             func_merge_children_main.merge_children_main(
                 operator=self,
                 settings_1=settings_1,

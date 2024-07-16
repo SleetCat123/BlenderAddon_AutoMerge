@@ -28,14 +28,12 @@ class Settings:
     only_grouped: bool
     root_is_selected: bool
     restore_selection: bool
-    reparent_if_object_hidden: bool
 
     def __init__(self):
         self.use_variants_merge = False
         self.only_grouped = False
         self.root_is_selected = False
         self.restore_selection = False
-        self.reparent_if_object_hidden = True
 
 
 def merge_children_main(operator, settings_1: func_merge_children_recursive.Settings, settings_2: Settings):
@@ -44,12 +42,12 @@ def merge_children_main(operator, settings_1: func_merge_children_recursive.Sett
     print(f"use_shapekeys_util: {settings_1.use_shapekeys_util}")
     print(f"remove_non_render_mod: {settings_1.remove_non_render_mod}")
     print(f"ignore_dont_merge_to_parent_group: {settings_1.ignore_dont_merge_to_parent_group}")
+    print(f"reparent_if_object_hidden: {settings_1.reparent_if_object_hidden}")
 
     print(f"use_variants_merge: {settings_2.use_variants_merge}")
     print(f"only_grouped: {settings_2.only_grouped}")
     print(f"root_is_selected: {settings_2.root_is_selected}")
     print(f"restore_selection: {settings_2.restore_selection}")
-    print(f"reparent_if_object_hidden: {settings_2.reparent_if_object_hidden}")
 
     if settings_2.restore_selection:
         selected_objects_names = [obj.name for obj in bpy.context.selected_objects]

@@ -18,6 +18,7 @@
 
 import bpy
 from .. import consts
+from . import func_reparent_if_object_hidden, temp_children_name_table
 from .func_apply_modifier_and_merge_selections import apply_modifier_and_merge_selections
 from .. variants import variants_prop
 from .utils import func_object_utils, func_custom_props_utils
@@ -27,32 +28,37 @@ class Settings:
     use_shapekeys_util: bool
     remove_non_render_mod: bool
     ignore_dont_merge_to_parent_group: bool # DONT_MERGE_TO_PARENT_GROUP_NAMEに属するオブジェクトを無視する
+    reparent_if_object_hidden: bool
     variants_name: str
 
     def __init__(self):
         self.use_shapekeys_util = True
         self.remove_non_render_mod = True
         self.ignore_dont_merge_to_parent_group = True
+        self.reparent_if_object_hidden = True
         self.variants_name = ""
 
 
-children_name_table = {}
-
-
 def merge_children_recursive(operator, settings: Settings, target: bpy.types.Object):
-    global children_name_table
-    children_name_table = func_object_utils.get_children_name_table()
-    merge_children_recursive_internal(
+    temp_children_name_table.update_table()
+
+    if settings.reparent_if_object_hidden:
+        func_reparent_if_object_hidden.reparent_if_object_hidden(
+            target=target,
+        )
+
+    internal_merge_children_recursive(
         operator=operator,
         settings=settings,
-        target=target
+        target=target,
     )
 
+    temp_children_name_table.clear_table()
 
-def merge_children_recursive_internal(operator, settings: Settings, target: bpy.types.Object):
+
+def internal_merge_children_recursive(operator, settings: Settings, target: bpy.types.Object):
     func_object_utils.deselect_all_objects()
-    global children_name_table
-    children_names = children_name_table[target.name]
+    children_names = temp_children_name_table.get(target.name)
     merge_children = []
     for child_name in children_names:
         child = bpy.data.objects[child_name]
@@ -66,7 +72,7 @@ def merge_children_recursive_internal(operator, settings: Settings, target: bpy.
                     func_object_utils.remove_object(child)
                     continue
 
-        merge_children_recursive_internal(
+        internal_merge_children_recursive(
             operator=operator,
             settings=settings,
             target=child

@@ -36,12 +36,26 @@ class Settings:
         self.variants_name = ""
 
 
+children_name_table = {}
+
+
 def merge_children_recursive(operator, settings: Settings, target: bpy.types.Object):
+    global children_name_table
+    children_name_table = func_object_utils.get_children_name_table()
+    merge_children_recursive_internal(
+        operator=operator,
+        settings=settings,
+        target=target
+    )
+
+
+def merge_children_recursive_internal(operator, settings: Settings, target: bpy.types.Object):
     func_object_utils.deselect_all_objects()
-    children = func_object_utils.get_children_objects(target)
+    global children_name_table
+    children_names = children_name_table[target.name]
     merge_children = []
-    for child in children:
-        name = child.name
+    for child_name in children_names:
+        child = bpy.data.objects[child_name]
         if settings.variants_name:
             # Variants
             prop = variants_prop.get_variants_list(child)
@@ -52,13 +66,13 @@ def merge_children_recursive(operator, settings: Settings, target: bpy.types.Obj
                     func_object_utils.remove_object(child)
                     continue
 
-        merge_children_recursive(
+        merge_children_recursive_internal(
             operator=operator,
             settings=settings,
             target=child
         )
         # 再帰処理後に子オブジェクトが変化している可能性があるため再取得
-        child_obj = bpy.data.objects[name]
+        child_obj = bpy.data.objects[child_name]
         if settings.ignore_dont_merge_to_parent_group and func_custom_props_utils.prop_is_true(child_obj, consts.DONT_MERGE_TO_PARENT_GROUP_NAME):
             print(f"Don't merge: {child_obj}")
         else:

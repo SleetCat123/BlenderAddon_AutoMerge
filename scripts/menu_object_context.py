@@ -19,7 +19,6 @@
 import bpy
 from .ops import (
     op_merge_children,
-    op_merge_children_grouped,
     op_merge_selections,
     op_assign_merge_group,
     op_add_vertex_group,
@@ -36,8 +35,17 @@ class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
     bl_idname = "VIEW3D_MT_object_specials_auto_merge"
 
     def draw(self, context):
-        self.layout.operator(op_merge_children.OBJECT_OT_specials_merge_children.bl_idname)
-        self.layout.operator(op_merge_children_grouped.OBJECT_OT_specials_merge_children_grouped.bl_idname)
+        op = self.layout.operator(op_merge_children.OBJECT_OT_specials_merge_children.bl_idname)
+        op.only_grouped = False
+
+        op = self.layout.operator(op_merge_children.OBJECT_OT_specials_merge_children.bl_idname, text="Merge Grouped Children")
+        op.only_grouped = True
+        op.root_is_selected = False
+
+        op = self.layout.operator(op_merge_children.OBJECT_OT_specials_merge_children.bl_idname, text="Merge Grouped Children (Root is Selected)")
+        op.only_grouped = True
+        op.root_is_selected = True
+
         self.layout.operator(op_merge_selections.OBJECT_OT_specials_merge_selections.bl_idname)
         self.layout.separator()
         self.layout.operator(op_assign_merge_group.OBJECT_OT_specials_assign_merge_group.bl_idname)

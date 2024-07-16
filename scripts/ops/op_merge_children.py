@@ -22,7 +22,7 @@ from bpy.props import BoolProperty
 from .. import consts, link_with_ShapeKeysUtil
 from ..variants import variants_prop
 from ..funcs import func_merge_children_recursive_re
-from ..funcs.utils import func_object_utils, func_ui_utils, func_package_utils
+from ..funcs.utils import func_object_utils, func_ui_utils, func_package_utils, func_custom_props_utils
 
 
 class OBJECT_OT_specials_merge_children(bpy.types.Operator):
@@ -43,13 +43,29 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         description=bpy.app.translations.pgettext(consts.KEY_REMOVE_NON_RENDER_MOD)
     )
 
+    only_grouped: BoolProperty(
+        name="Only Grouped",
+        default=False,
+    )
+    root_is_selected: BoolProperty(
+        name="Root is Selected",
+        default=False,
+    )
+
     @classmethod
     def poll(cls, context):
         return bpy.context.selected_objects
 
     def draw(self, context):
         layout = self.layout
+        layout.prop(self, "use_variants")
         layout.prop(self, "remove_non_render_mod")
+        layout.prop(self, "only_grouped")
+        
+        row = layout.row()
+        row.enabled = self.only_grouped
+        row.prop(self, "root_is_selected")
+
         if link_with_ShapeKeysUtil.shapekey_util_is_found():
             layout.separator()
             box = layout.box()
@@ -64,9 +80,19 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
     def execute(self, context):
         settings = func_merge_children_recursive_re.Settings()
         settings.remove_non_render_mod = self.remove_non_render_mod
+        print(f"use_variants: {self.use_variants}")
+        print(f"only_grouped: {self.only_grouped}")
         try:
             # rootを取得
-            root_objects = func_object_utils.get_selected_root_objects()
+            if self.only_grouped:
+                root_objects = func_custom_props_utils.get_prop_root_objects(
+                    prop_name=consts.PARENTS_GROUP_NAME,
+                    targets=bpy.context.selected_objects
+                )
+                if self.root_is_selected:
+                    root_objects = list(set(root_objects) & set(bpy.context.selected_objects))
+            else:
+                root_objects = func_object_utils.get_selected_root_objects()
             root_objects_names = []
             for root in root_objects:
                 variant_names = variants_prop.get_all_variant_names_in_children(root)

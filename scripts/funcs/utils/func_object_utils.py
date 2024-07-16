@@ -86,6 +86,24 @@ def get_children_recursive(targets, only_current_view_layer: bool = True, contai
     return result
 
 
+# key: parent, value: children nameなdictを返す
+def get_children_name_table(only_current_view_layer: bool = True):
+    current_layer_objects_name = bpy.context.window.view_layer.objects.keys()
+    all_objects = bpy.data.objects
+    result = {}
+    for obj in all_objects:
+        if only_current_view_layer and obj.name not in current_layer_objects_name:
+            continue
+        if obj.name not in result:
+            result[obj.name] = []
+        parent = obj.parent
+        if parent:
+            if parent.name not in result:
+                result[parent.name] = []
+            result[parent.name].append(obj.name)
+    return result
+
+
 def select_children_recursive(targets=None, only_current_view_layer: bool = True):
     def recursive(t):
         select_object(t, True)
@@ -167,10 +185,13 @@ def remove_objects(targets=None):
 
 
 def get_selected_root_objects():
-    selected_objects = bpy.context.selected_objects
+    return get_root_objects(bpy.context.selected_objects)
+
+# targetsと子の中で最も上位階層にあるオブジェクト群を取得
+def get_root_objects(targets):
     not_root = []
     root_objects = []
-    for obj in selected_objects:
+    for obj in targets:
         if obj in not_root:
             continue
         parent = obj
@@ -181,7 +202,7 @@ def get_selected_root_objects():
                 # 親以上のオブジェクトに選択中オブジェクトが存在しなければ、そのオブジェクトはrootとなる
                 root_objects.append(obj)
                 break
-            if parent in selected_objects:
+            if parent in targets:
                 not_root.append(parent)
                 break
     return root_objects

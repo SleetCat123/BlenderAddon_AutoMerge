@@ -16,6 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+import traceback
 import bpy
 from bpy.props import BoolProperty
 from .. import consts, link_with_ShapeKeysUtil
@@ -50,15 +51,20 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
             col.prop(addon_prefs, "apply_modifiers_with_shapekeys")
 
     def execute(self, context):
-        addon_prefs = func_package_utils.get_addon_prefs()
-        b = func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(
-            operator=self,
-            apply_modifiers_with_shapekeys=addon_prefs.apply_modifiers_with_shapekeys,
-            remove_non_render_mod=self.remove_non_render_mod
-        )
-        if b:
+        try:
+            addon_prefs = func_package_utils.get_addon_prefs()
+            func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(
+                operator=self,
+                apply_modifiers_with_shapekeys=addon_prefs.apply_modifiers_with_shapekeys,
+                remove_non_render_mod=self.remove_non_render_mod
+            )
             return {'FINISHED'}
-        else:
+        except Exception as e:
+            bpy.ops.ed.undo_push(message = "Restore point")
+            bpy.ops.ed.undo()
+            bpy.ops.ed.undo_push(message = "Restore point")
+            traceback.print_exc()
+            self.report({'ERROR'}, str(e))
             return {'CANCELLED'}
 
 

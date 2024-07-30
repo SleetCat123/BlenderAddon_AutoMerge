@@ -78,6 +78,11 @@ def apply_modifiers(operator, use_shapekeys_util: bool, remove_non_render_mod: b
                 try:
                     bpy.ops.object.modifier_apply(modifier=modifier.name)
                     print(f"Apply: [{modifier.name}]")
+                    try:
+                        # なんかここだけUnicodeEncodeErrorが出たり出なかったりするので対策
+                        print("Apply: [{0}]".format(modifier.name))
+                    except UnicodeDecodeError:
+                        print("Apply: ?")
                 except RuntimeError:
                     # 無効なModifier（対象オブジェクトが指定されていないなどの状態）は適用しない
                     print(f"!!! Apply failed !!!: [{modifier.name}]")

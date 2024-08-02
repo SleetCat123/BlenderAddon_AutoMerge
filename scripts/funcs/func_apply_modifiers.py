@@ -77,10 +77,9 @@ def apply_modifiers(operator, use_shapekeys_util: bool, remove_non_render_mod: b
                 # または、モディファイアの名前欄が%A%で始まっているなら
                 try:
                     bpy.ops.object.modifier_apply(modifier=modifier.name)
-                    print(f"Apply: [{modifier.name}]")
                     try:
                         # なんかここだけUnicodeEncodeErrorが出たり出なかったりするので対策
-                        print("Apply: [{0}]".format(modifier.name))
+                        print(f"Apply: [{modifier.name}]")
                     except UnicodeDecodeError:
                         print("Apply: ?")
                 except RuntimeError:

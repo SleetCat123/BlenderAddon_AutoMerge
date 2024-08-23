@@ -3,6 +3,8 @@
 
 ##
 - add: Variants Merge機能を追加
+- add: エラー発生時に処理実行前の状態を復元するようにした
+- fix: Blender4.1でAuto Smoothの扱いが変わったことによりエラーが発生するのを修正
 - change: オペレーターのDuplicate設定を廃止
 
 ## 

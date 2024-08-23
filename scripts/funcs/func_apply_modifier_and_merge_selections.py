@@ -151,10 +151,12 @@ def apply_modifier_and_merge_selections(operator, use_shapekeys_util: bool, remo
             if obj.type != 'MESH':
                 print(f"{obj} is not mesh")
                 continue
-            if obj.data.use_auto_smooth:
+            if hasattr(obj.data, 'use_auto_smooth') and obj.data.use_auto_smooth:
+                # 4.1からuse_auto_smoothが廃止されたので、hasattrで確認する
                 # 子オブジェクトのuse_auto_smoothがtrueなら親のAutoSmoothを有効化
-                merged.data.use_auto_smooth = True
-                merged.data.auto_smooth_angle = math.pi
+                if hasattr(merged.data, 'use_auto_smooth'):
+                    merged.data.use_auto_smooth = True
+                    merged.data.auto_smooth_angle = math.pi
             if not merged_has_armature:
                 # Armatureモディファイアがマージ先オブジェクトになく、マージ元オブジェクトにあるときにモディファイアを追加する
                 for m in obj.modifiers:

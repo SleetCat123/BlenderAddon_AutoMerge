@@ -20,7 +20,7 @@ import bpy
 from .ops import (
     op_merge_children,
     op_merge_selections,
-    op_assign_merge_group,
+    op_assign_prop,
 )
 from . import consts
 
@@ -47,8 +47,13 @@ class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
 
         self.layout.operator(op_merge_selections.OBJECT_OT_specials_merge_selections.bl_idname)
         self.layout.separator()
-        self.layout.operator(op_assign_merge_group.OBJECT_OT_specials_assign_merge_group.bl_idname)
-        self.layout.operator(op_assign_merge_group.OBJECT_OT_specials_assign_dont_merge_to_parent_group.bl_idname)
+        label_base = bpy.app.translations.pgettext(op_assign_prop.OBJECT_OT_mizore_assign_prop.bl_idname + ".label")
+
+        op = self.layout.operator(op_assign_prop.OBJECT_OT_mizore_assign_prop.bl_idname, text=label_base.format(consts.PARENTS_GROUP_NAME))
+        op.name = consts.PARENTS_GROUP_NAME
+
+        op = self.layout.operator(op_assign_prop.OBJECT_OT_mizore_assign_prop.bl_idname, text=label_base.format(consts.DONT_MERGE_TO_PARENT_GROUP_NAME))
+        op.name = consts.DONT_MERGE_TO_PARENT_GROUP_NAME
 
 
 def register():

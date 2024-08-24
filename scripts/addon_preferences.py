@@ -18,7 +18,8 @@
 
 import bpy
 from bpy.props import BoolProperty
-from .funcs.utils import func_package_utils, func_ui_utils
+from .funcs import func_warning_slow_method
+from .funcs.utils import func_package_utils
 from .link import link_with_ShapeKeysUtil
 
 
@@ -34,7 +35,7 @@ class addon_preferences(bpy.types.AddonPreferences):
         box = layout.box()
         if link_with_ShapeKeysUtil.shapekey_util_is_found():
             box.label(text='AutoMerge - ShapeKey Utils')
-            func_ui_utils.box_warning_slow_method(box)
+            func_warning_slow_method.box_warning_slow_method(box)
             box.prop(self, "apply_modifiers_with_shapekeys")
 
 

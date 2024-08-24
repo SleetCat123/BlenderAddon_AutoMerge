@@ -21,20 +21,20 @@ import bpy
 from bpy.props import BoolProperty
 from .. import consts
 from ..link import link_with_ShapeKeysUtil
-from ..funcs import func_apply_modifier_and_merge_selections
-from ..funcs.utils import func_ui_utils, func_package_utils
+from ..funcs import func_apply_modifier_and_merge_selections, func_warning_slow_method
+from ..funcs.utils import func_package_utils
 
 
 class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
     bl_idname = "object.automerge_apply_modifier_and_merge_selections"
     bl_label = "Merge Selections"
-    bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
+    bl_description = "Merge selected objects into the active object"
     bl_options = {'REGISTER', 'UNDO'}
 
     remove_non_render_mod: BoolProperty(
         name="Remove Non-Render Modifiers",
         default=True,
-        description=bpy.app.translations.pgettext(consts.KEY_REMOVE_NON_RENDER_MOD)
+        description="A non-render modifier will be removed."
     )
 
     def draw(self, context):
@@ -43,9 +43,9 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
         if link_with_ShapeKeysUtil.shapekey_util_is_found():
             layout.separator()
             box = layout.box()
-            func_ui_utils.shapekey_util_label(box)
-            func_ui_utils.box_warning_slow_method(box)
-            func_ui_utils.box_warning_read_pref(box)
+            func_warning_slow_method.shapekey_util_label(box)
+            func_warning_slow_method.box_warning_slow_method(box)
+            func_warning_slow_method.box_warning_read_pref(box)
             col = box.column()
             col.enabled = False
             addon_prefs = func_package_utils.get_addon_prefs()
@@ -69,9 +69,20 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
             return {'CANCELLED'}
 
 
+translations_dict = {
+    "ja_JP": {
+        ("*", "Merge selected objects into the active object"): "最後に選択したオブジェクトに対し、\n他の選択中オブジェクトをマージします",
+        ("*", "Remove Non-Render Modifiers"): "レンダリング無効モディファイアを削除",
+        ("*", "A non-render modifier will be removed."): "レンダリング対象外のモディファイアを削除します",
+    },
+}
+
+
 def register():
     bpy.utils.register_class(OBJECT_OT_specials_merge_selections)
+    bpy.app.translations.register(__name__, translations_dict)
 
 
 def unregister():
     bpy.utils.unregister_class(OBJECT_OT_specials_merge_selections)
+    bpy.app.translations.unregister(__name__)

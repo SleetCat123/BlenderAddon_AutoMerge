@@ -22,50 +22,58 @@ from bpy.props import BoolProperty
 from .. import consts
 from ..link import link_with_ShapeKeysUtil
 from ..funcs import func_merge_children_recursive, func_merge_children_main
-from ..funcs.utils import func_ui_utils, func_package_utils
+from ..funcs import func_warning_slow_method
+from ..funcs.utils import func_package_utils
 
 
 class OBJECT_OT_specials_merge_children(bpy.types.Operator):
     bl_idname = "object.automerge_apply_modifier_and_merge_children"
     bl_label = "Merge Children"
-    bl_description = bpy.app.translations.pgettext(bl_idname + consts.DESC)
+    bl_description = "Merge child objects into parent objects"
     bl_options = {'REGISTER', 'UNDO'}
 
     ignore_dont_merge_to_parent_group: BoolProperty(
-        name="Ignore " + consts.DONT_MERGE_TO_PARENT_GROUP_NAME + " Property",
+        name=f"Ignore \"{consts.DONT_MERGE_TO_PARENT_GROUP_NAME}\"",
         default=True,
+        description=f"Ignore objects assigned the property \"{consts.DONT_MERGE_TO_PARENT_GROUP_NAME}\""
     )
 
     use_variants_merge: BoolProperty(
-        name="Use Variants",
+        name="Use Variant Merge",
         default=True,
-        description=bpy.app.translations.pgettext(consts.KEY_USE_VARIANTS)
+        description="Use variants merge"
     )
 
     remove_non_render_mod: BoolProperty(
         name="Remove Non-Render Modifiers",
         default=True,
-        description=bpy.app.translations.pgettext(consts.KEY_REMOVE_NON_RENDER_MOD)
+        description="A non-render modifier will be removed."
     )
 
     reparent_if_object_hidden: BoolProperty(
         name="Reparent If Object Hidden",
         default=True,
+        description="Reparent if the parent object is hidden"
     )
 
     only_grouped: BoolProperty(
-        name="Only Grouped",
+        name=f"Only Grouped {consts.PARENTS_GROUP_NAME}",
         default=False,
+        description=f"Only merge objects assigned the property \"{consts.PARENTS_GROUP_NAME}\""
     )
+
     root_is_selected: BoolProperty(
-        name="Root is Selected",
+        name="Selected Only",
         default=False,
+        description="Only merge objects selected"
     )
 
     restore_selection: BoolProperty(
         name="Restore Selection",
         default=False,
+        description="Restore the selection after merging"
     )
+
 
     @classmethod
     def poll(cls, context):
@@ -88,9 +96,9 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         if link_with_ShapeKeysUtil.shapekey_util_is_found():
             layout.separator()
             box = layout.box()
-            func_ui_utils.shapekey_util_label(box)
-            func_ui_utils.box_warning_slow_method(box)
-            func_ui_utils.box_warning_read_pref(box)
+            func_warning_slow_method.shapekey_util_label(box)
+            func_warning_slow_method.box_warning_slow_method(box)
+            func_warning_slow_method.box_warning_read_pref(box)
             col = box.column()
             col.enabled = False
             addon_prefs = func_package_utils.get_addon_prefs()
@@ -124,9 +132,30 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
             return {'CANCELLED'}
 
 
+translations_dict = {
+    "ja_JP": {
+        ("*", "Merge child objects into parent objects"): "オブジェクトの子オブジェクトをマージします",
+        ("*", f"Ignore \"{consts.DONT_MERGE_TO_PARENT_GROUP_NAME}\""): f"「{consts.DONT_MERGE_TO_PARENT_GROUP_NAME}」を無視",
+        ("*", f"Ignore objects assigned the property \"{consts.DONT_MERGE_TO_PARENT_GROUP_NAME}\""): f"「{consts.DONT_MERGE_TO_PARENT_GROUP_NAME}」を無視",
+        ("*", "Use Variant Merge"): "バリアントマージを使用",
+        ("*", "Use variants merge"): "バリアントマージを使用",
+        ("*", "Remove Non-Render Modifiers"): "レンダリング無効モディファイアを削除",
+        ("*", "A non-render modifier will be removed."): "レンダリング対象外のモディファイアを削除します",
+        ("*", "Reparent If Object Hidden"): "親子関係の再設定",
+        ("*", "Reparent if the parent object is hidden"): "親オブジェクトが非表示の場合、オブジェクトの親を変更します",
+        ("*", f"Only Grouped {consts.PARENTS_GROUP_NAME}"): f"{consts.PARENTS_GROUP_NAME}が有効なオブジェクトのみ",
+        ("*", f"Only merge objects assigned the property \"{consts.PARENTS_GROUP_NAME}\""): f"「{consts.PARENTS_GROUP_NAME}」が有効なオブジェクトだけをマージ処理の対象とします",
+        ("*", "Selected Only"): "選択中のみ",
+        ("*", "Only merge objects selected"): "選択中のオブジェクトのみをマージ処理の対象とします",
+        ("*", "Restore Selection"): "選択を復元",
+        ("*", "Restore the selection after merging"): "処理の終了後にオブジェクトの選択状態を復元します",
+    },
+}
+
 def register():
     bpy.utils.register_class(OBJECT_OT_specials_merge_children)
-
+    bpy.app.translations.register(__name__, translations_dict)
 
 def unregister():
     bpy.utils.unregister_class(OBJECT_OT_specials_merge_children)
+    bpy.app.translations.unregister(__name__)

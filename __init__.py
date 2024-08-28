@@ -51,6 +51,7 @@ else:
         variants_prop
     )
 
+import bpy
 
 classes = [
     addon_preferences,

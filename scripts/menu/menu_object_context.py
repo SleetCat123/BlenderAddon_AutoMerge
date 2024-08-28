@@ -17,12 +17,12 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
-from .ops import (
+from ..ops import (
     op_merge_children,
     op_merge_selections,
     op_assign_prop,
 )
-from . import consts
+from .. import consts
 
 
 def INFO_MT_object_specials_auto_merge_menu(self, context):

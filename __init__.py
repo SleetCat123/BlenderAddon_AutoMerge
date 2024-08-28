@@ -15,10 +15,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 # ##### END GPL LICENSE BLOCK #####
-import importlib
-import os
-import re
-from glob import glob
+from .scripts.funcs.utils import func_package_utils
 
 bl_info = {
     "name": "AutoMerge",
@@ -30,45 +27,58 @@ bl_info = {
     "category": "Objects"
 }
 
-loaded_modules = {}
+if 'bpy' in locals():
+    from importlib import reload
+    import sys
+    for k, v in list(sys.modules.items()):
+        if k.startswith(func_package_utils.get_package_root()):
+            reload(v)
+else:
+    from .scripts import (
+        addon_preferences,
+        consts,
+    )
+    from .scripts.menu import (
+        menu_object_context,
+    )
+    from .scripts.ops import (
+        op_assign_prop,
+        op_merge_children,
+        op_merge_selections,
+    )
+    from .scripts.variants import (
+        panel_variants,
+        variants_prop
+    )
 
 
-def register_module(module):
-    func = getattr(module, "register", None)
-    if callable(func):
-        func()
+classes = [
+    addon_preferences,
+    consts,
 
+    menu_object_context,
 
-def unregister_module(module):
-    func = getattr(module, "unregister", None)
-    if callable(func):
-        func()
+    op_assign_prop,
+    op_merge_children,
+    op_merge_selections,
+
+    panel_variants,
+    variants_prop,
+]
 
 
 def register():
-    path = os.path.dirname(__file__)
-    # print(path)
-    module_files = glob(f'{path}/scripts/**/*.py', recursive=True)
-    regex = re.compile(r"[\\/]")
-    module_names = [regex.sub('.', p[len(path):-3]) for p in module_files]
-    # print(module_names)
-    for module_name in module_names:
-        if module_name in loaded_modules:
-            module = loaded_modules[module_name]
-            module = importlib.reload(module)
-            # print("reload: " + str(module))
-        else:
-            module = importlib.import_module(module_name, package=__package__)
-            loaded_modules[module_name] = module
-        register_module(module)
+    for cls in classes:
+        try:
+            getattr(cls, "register", None)()
+        except Exception as e:
+            print(e)
 
 
 def unregister():
-    global loaded_modules
-    for module in loaded_modules.values():
-        unregister_module(module)
+    for cls in classes:
         try:
-            importlib.reload(module)
+            getattr(cls, "unregister", None)()
         except Exception as e:
             print(e)
 

@@ -30,6 +30,8 @@ JOIN_AS_SHAPEKEY_PREFIX = "%SHAPE%"  # オブジェクト名が"%SHAPE%"で始�
 
 MULTIPLE_VARIANTS_PROP_NAME = "MizoresExporterVariants"  # オブジェクトのカスタムプロパティ名
 
+ADDON_NAME = "AutoMerge"
+
 def register():
     bpy.types.WindowManager.mizore_automerge_collection_name = PARENTS_GROUP_NAME
     bpy.types.WindowManager.mizore_automerge_dont_merge_to_parent_collection_name = DONT_MERGE_TO_PARENT_GROUP_NAME

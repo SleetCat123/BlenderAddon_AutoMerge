@@ -20,8 +20,8 @@ import bpy
 from ..ops import (
     op_merge_children,
     op_merge_selections,
-    op_assign_prop,
 )
+from ..assign_prop_panel import op_assign_prop
 from .. import consts
 
 

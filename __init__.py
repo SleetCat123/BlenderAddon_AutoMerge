@@ -38,11 +38,18 @@ else:
         addon_preferences,
         consts,
     )
+    from .scripts.assign_prop_panel import (
+        register_classes
+    )
+    from .scripts.panels import (
+        panel_assign_object_groups,
+        panel_select_modifier_prefix,
+        panel_switch_apply_as_shape_modifiers
+    )
     from .scripts.menu import (
         menu_object_context,
     )
     from .scripts.ops import (
-        op_assign_prop,
         op_merge_children,
         op_merge_selections,
     )
@@ -57,14 +64,19 @@ classes = [
     addon_preferences,
     consts,
 
+    register_classes,
+    panel_assign_object_groups,
+    panel_select_modifier_prefix,
+    panel_switch_apply_as_shape_modifiers,
+
     menu_object_context,
 
-    op_assign_prop,
     op_merge_children,
     op_merge_selections,
 
     panel_variants,
     variants_prop,
+
 ]
 
 

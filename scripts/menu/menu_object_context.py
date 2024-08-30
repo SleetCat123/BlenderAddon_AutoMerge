@@ -41,9 +41,9 @@ class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
         op.only_grouped = True
         op.root_is_selected = False
 
-        op = self.layout.operator(op_merge_children.OBJECT_OT_specials_merge_children.bl_idname, text="Merge Grouped Children (Root is Selected)")
-        op.only_grouped = True
-        op.root_is_selected = True
+        # op = self.layout.operator(op_merge_children.OBJECT_OT_specials_merge_children.bl_idname, text="Merge Grouped Children (Root is Selected)")
+        # op.only_grouped = True
+        # op.root_is_selected = True
 
         self.layout.operator(op_merge_selections.OBJECT_OT_specials_merge_selections.bl_idname)
         self.layout.separator()

@@ -22,7 +22,7 @@ bl_info = {
     "author": "@sleetcat123(Twitter)",
     "version": (2,2,0),
     "blender": (2, 80, 0),
-    "location": "",
+    "location": "Menu > AutoMerge",
     "description": "Merge Objects.",
     "category": "Objects"
 }

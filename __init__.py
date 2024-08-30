@@ -38,6 +38,9 @@ else:
         addon_preferences,
         consts,
     )
+    from .scripts.funcs import (
+        func_warning_slow_method
+    )
     from .scripts.assign_prop_panel import (
         register_classes
     )
@@ -63,6 +66,7 @@ import bpy
 classes = [
     addon_preferences,
     consts,
+    func_warning_slow_method,
 
     register_classes,
     panel_assign_object_groups,

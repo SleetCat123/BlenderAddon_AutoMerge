@@ -20,17 +20,15 @@ from . import consts
 
 translations_dict = {
     "en_US": {
-        ("*", "error_join_as_shape_verts_count_difference"): "Join As Shape" + consts.JOIN_AS_SHAPEKEY_PREFIX + ": Could not execute the process because the number of vertices of the shape key is different.\n"
-        "It may be because the number of vertices is changed by Boolean or Merge of the Mirror modifier.\n{obj_1} (verts: {obj_verts_1}), {obj_2} (verts: {obj_verts_2})",
+        ("*", "error_join_as_shape_verts_count_difference"): "Join As Shape (" + consts.JOIN_AS_SHAPEKEY_PREFIX + "): Could not execute the process because the number of vertices is different.\n{obj_1} (verts: {obj_verts_1}), {obj_2} (verts: {obj_verts_2})",
 
-        ("*", "mizore_error_apply_as_shapekey_invalid_modifier"): "Apply As Shape: Could not execute the process because the modifier type is not supported or the settings are invalid.\nObject: {obj_name}\nModifier: {modifier_name}({modifier_type})"
+        ("*", "mizore_error_apply_as_shapekey_invalid_modifier"): "Apply As Shape: Could not execute the process because the modifier type is not supported or the modifier settings are invalid.\nObject: {obj_name}\nModifier: {modifier_name}({modifier_type})"
     },
     "ja_JP": {
         ("*", "error_join_as_shape_verts_count_difference"):
-            "Join As Shape" + consts.JOIN_AS_SHAPEKEY_PREFIX + ": 頂点数が異なっているため、処理を実行できませんでした。\n"
-            "ブーリアンやミラーモディファイアの\"結合\"で頂点数が変化しているなどの原因が考えられます。\n{obj_1} (頂点数: {obj_verts_1}), {obj_2} (頂点数: {obj_verts_2})",
+            "Join As Shape (" + consts.JOIN_AS_SHAPEKEY_PREFIX + "): 頂点数が異なっているため、処理を実行できませんでした。\n{obj_1} (頂点数: {obj_verts_1}), {obj_2} (頂点数: {obj_verts_2})",
 
-        ("*", "mizore_error_apply_as_shapekey_invalid_modifier"): "Apply As Shape: モディファイアの種類が非対応または設定内容が不適切なため、処理を実行できませんでした。\nオブジェクト: {obj_name}\nモディファイア: {modifier_name}({modifier_type})"
+        ("*", "mizore_error_apply_as_shapekey_invalid_modifier"): "Apply As Shape: モディファイアの種類が非対応またはモディファイアの設定内容に問題があるため、処理を実行できませんでした。\nオブジェクト: {obj_name}\nモディファイア: {modifier_name}({modifier_type})"
     },
 }
 

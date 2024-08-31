@@ -37,6 +37,7 @@ else:
     from .scripts import (
         addon_preferences,
         consts,
+        translations,
     )
     from .scripts.funcs import (
         func_warning_slow_method
@@ -60,12 +61,17 @@ else:
         panel_variants,
         variants_prop
     )
+    from .scripts.link import (
+        link_with_MizoresCustomExporter,
+        link_with_ShapeKeysUtil,
+    )
 
 import bpy
 
 classes = [
     addon_preferences,
     consts,
+    translations,
     func_warning_slow_method,
 
     register_classes,
@@ -81,6 +87,8 @@ classes = [
     panel_variants,
     variants_prop,
 
+    link_with_MizoresCustomExporter,
+    link_with_ShapeKeysUtil,
 ]
 
 

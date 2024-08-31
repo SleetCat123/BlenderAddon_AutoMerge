@@ -185,7 +185,20 @@ def apply_modifier_and_merge_selections(operator, use_shapekeys_util: bool, remo
 
         # JOIN_AS_SHAPEKEY_PREFIXで始まる名前のオブジェクトをJoin as shapeで結合する
         if join_as_shape_meshes:
-            func_object_utils.select_objects(join_as_shape_meshes)
+            merged_vertex_count = len(merged.data.vertices)
+            for obj in join_as_shape_meshes:
+                # 頂点数が違ったら例外を出す
+                obj_vertex_count = len(obj.data.vertices)
+                print(f"{obj.name} vertex_count: {obj_vertex_count}, {merged.name} vertex_count: {merged_vertex_count}")
+                if obj_vertex_count != merged_vertex_count:
+                    text = bpy.app.translations.pgettext("error_join_as_shape_verts_count_difference").format(
+                        obj_1 = obj.name, 
+                        obj_verts_1 = obj_vertex_count, 
+                        obj_2 = merged.name, 
+                        obj_verts_2 = merged_vertex_count
+                    )
+                    raise Exception(text)
+                func_object_utils.select_object(obj, True)
             bpy.ops.object.join_shapes()
             for obj in join_as_shape_meshes:
                 # シェイプキー名からprefixを削除

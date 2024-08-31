@@ -68,10 +68,16 @@ def apply_modifiers(operator, use_shapekeys_util: bool, remove_non_render_mod: b
                         use_shapekeys_util=use_shapekeys_util,
                         remove_non_render_mod=remove_non_render_mod
                     )
-                except RuntimeError:
+                except RuntimeError as e:
                     # 無効なModifier（対象オブジェクトが指定されていないなどの状態）は適用しない
-                    print(f"!!! Apply as shapekey failed !!!: [{modifier.name}]")
-                    bpy.ops.object.modifier_remove(modifier=modifier.name)
+                    warn = bpy.app.translations.pgettext("mizore_error_apply_as_shapekey_invalid_modifier").format(
+                        obj_name = obj.name,
+                        modifier_name = modifier.name,
+                        modifier_type = modifier.type
+                    )
+                    print(e)
+                    # bpy.ops.object.modifier_remove(modifier=modifier.name)
+                    raise Exception(warn)
             elif modifier.name.startswith(consts.FORCE_APPLY_MODIFIER_PREFIX) or modifier.type != 'ARMATURE':
                 # モディファイアが処理対象モディファイアなら
                 # または、モディファイアの名前欄が%A%で始まっているなら

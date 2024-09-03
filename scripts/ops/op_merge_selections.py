@@ -20,7 +20,7 @@ import traceback
 import bpy
 from bpy.props import BoolProperty
 from .. import consts
-from ..link import link_with_ShapeKeysUtil
+from ..link import func_link_with_ShapeKeysUtil
 from ..funcs import func_apply_modifier_and_merge_selections, func_warning_slow_method
 from ..funcs.utils import func_package_utils
 
@@ -40,7 +40,7 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "remove_non_render_mod")
-        if link_with_ShapeKeysUtil.shapekey_util_is_found():
+        if func_link_with_ShapeKeysUtil.shapekey_util_is_found():
             layout.separator()
             box = layout.box()
             func_warning_slow_method.shapekey_util_label(box)

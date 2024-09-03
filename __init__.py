@@ -20,7 +20,7 @@ from .scripts.funcs.utils import func_package_utils
 bl_info = {
     "name": "AutoMerge",
     "author": "@sleetcat123(Twitter)",
-    "version": (2,2,0),
+    "version": (3, 0, 0),
     "blender": (2, 80, 0),
     "location": "Menu > AutoMerge",
     "description": "Merge Objects.",
@@ -62,8 +62,7 @@ else:
         variants_prop
     )
     from .scripts.link import (
-        link_with_MizoresCustomExporter,
-        link_with_ShapeKeysUtil,
+        op_link_with_MizoresCustomExporter,
     )
 
 import bpy
@@ -87,8 +86,7 @@ classes = [
     panel_variants,
     variants_prop,
 
-    link_with_MizoresCustomExporter,
-    link_with_ShapeKeysUtil,
+    op_link_with_MizoresCustomExporter,
 ]
 
 
@@ -97,6 +95,7 @@ def register():
         try:
             getattr(cls, "register", None)()
         except Exception as e:
+            print(f"Error registering {cls.__name__}")
             print(e)
 
 
@@ -105,6 +104,7 @@ def unregister():
         try:
             getattr(cls, "unregister", None)()
         except Exception as e:
+            print(f"Error unregistering {cls.__name__}")
             print(e)
 
 

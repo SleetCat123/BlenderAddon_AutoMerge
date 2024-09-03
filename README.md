@@ -1,30 +1,48 @@
 # BlenderAddon-AutoMerge
 ## はじめに
-このデータは、3Dモデリングソフト Blender 用のアドオンです。  
-
 モデルのオブジェクト数が多い！  
 モディファイアを適用してから結合（マージ）するのめんどくさい！  
 というときに便利なアドオンです。  
 
+ダウンロードはこちらから  
+https://github.com/SleetCat123/BlenderAddon_AutoMerge/releases  
+
+Boothでもダウンロードできます。  
+（現在は古いバージョンのみ）  
+https://sleetcatshop.booth.pm/items/1166452  
+
 ---  
 ### 同作者の別アドオンとの連携
-[ShapeKeys Util](https://sleetcatshop.booth.pm/items/1224307) との連携機能を有効にすることにより、シェイプキーをもつオブジェクトのモディファイアを適用してマージできるようになります。
+[ShapeKeys Util](https://github.com/SleetCat123/BlenderAddon_ShapeKeysUtil) との連携機能を有効にすることにより、シェイプキーをもつオブジェクトのモディファイアを適用してマージできるようになります。
+
+[MizoresCustomExporter](https://github.com/SleetCat123/BlenderAddon_MizoresCustomExporter) との連携機能を有効にすることで、
+- オブジェクトをマージした状態でエクスポート
+- エクスポート完了後には元通り！
+
+ということもできるようになります。  
+（詳しくは[MizoresCustomExporter](https://github.com/SleetCat123/BlenderAddon_MizoresCustomExporter)のReadmeを参照）  
 
 ---
-### ◆バージョンVer_2.2.0以前から移行する際の注意
+### ◆Ver_2.1.0またはそれより前のバージョンから移行する際の注意
 1. エクスポート時のマージ対象かどうかの識別方法が変更されました。  
-   - 2.2.0以前: `MergeGroup`という名前の**コレクションに入っている**オブジェクトをマージ対象とする
-   - 2.2.0以降: `MergeGroup`という名前の**propが有効になっている**オブジェクトをマージ対象とする
+   - 2.1.0まで: `MergeGroup`という名前の**コレクションに入っている**オブジェクトをマージ対象とする
+   - 3.0.0から: `MergeGroup`という名前の**propが有効になっている**オブジェクトをマージ対象とする
 
-2.2.0以前のデータから最新の方式に移行する場合、[MizoresCustomExporter]() の`Assign`ボタンを押して移行してください。
+2.1.0以前のデータから最新の方式に移行する場合、[MizoresCustomExporter](https://github.com/SleetCat123/BlenderAddon_MizoresCustomExporter) の`Convert Collections`を使用して移行してください。
 
 変更理由
    別のblendファイルからオブジェクトをインポートした際、コレクションの設定が初期化されてしまう場合があります。
    `MergeGroup`などの制御用コレクションを使用していた場合、これまではインポート後に再設定しなければなりませんでした。  
    この問題を避けるため、コレクションではなくオブジェクトそのものに各種制御用フラグを持たせる仕様に変更しました。
 
-2. バージョンVer_2.2.0以前に本アドオンに搭載されていたfbxエクスポート機能は、別アドオン『MizoresCustomExporter』として分離しました。  
+2. バージョンVer_2.2.0以前に本アドオンに搭載されていたfbxエクスポート機能は、別アドオン[MizoresCustomExporter](https://github.com/SleetCat123/BlenderAddon_MizoresCustomExporter)として分離しました。  
 エクスポート時の自動マージ機能を使用する場合は、こちらのアドオンをインストールしてください。
+
+3. Blender 2.7系への互換性確保コードを削除しました。  
+   2.7系で使用したい場合は、Ver_2.1.0以前のバージョンを使用してください。
+
+4. スクリプトの内部構造を変更しました。  
+   不具合回避のため、バージョンアップ時には古いバージョンを削除してから導入してください。
 
 
 ## 機能説明

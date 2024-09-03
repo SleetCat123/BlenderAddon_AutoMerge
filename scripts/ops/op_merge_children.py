@@ -20,7 +20,7 @@ import bpy
 import traceback
 from bpy.props import BoolProperty
 from .. import consts
-from ..link import link_with_ShapeKeysUtil
+from ..link import func_link_with_ShapeKeysUtil
 from ..funcs import func_merge_children_recursive, func_merge_children_main
 from ..funcs import func_warning_slow_method
 from ..funcs.utils import func_package_utils
@@ -93,7 +93,7 @@ class OBJECT_OT_specials_merge_children(bpy.types.Operator):
         row.enabled = self.only_grouped
         row.prop(self, "root_is_selected")
 
-        if link_with_ShapeKeysUtil.shapekey_util_is_found():
+        if func_link_with_ShapeKeysUtil.shapekey_util_is_found():
             layout.separator()
             box = layout.box()
             func_warning_slow_method.shapekey_util_label(box)

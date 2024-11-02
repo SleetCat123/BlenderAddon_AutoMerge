@@ -1,4 +1,6 @@
 ## ◆更新履歴
+### 2024-11-02 v3.0.1
+- fix: prop割り当てパネルでInclude Childrenが機能していなかったのを修正
 
 ### 2024-09-03 v3.0.0
 - add: Variants Merge機能を追加

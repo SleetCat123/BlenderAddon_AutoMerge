@@ -135,7 +135,7 @@ def apply_modifier_and_merge_selections(operator, use_shapekeys_util: bool, remo
     func_object_utils.deselect_all_objects()
     func_object_utils.select_object(merged, True)
     func_object_utils.set_active_object(merged)
-    print(f"target: {merged} <- merge <- {targets}")
+    print(f"target: {merged.name} <- merge <- {targets}")
     if len(targets) > 1:
         targets.sort(key=lambda x: x.name)
         print("------ Merge ------\n" + '\n'.join([f"{obj.name}   {obj}" for obj in targets]) + "\n-------------------")

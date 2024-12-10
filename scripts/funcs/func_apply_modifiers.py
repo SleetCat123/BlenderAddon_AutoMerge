@@ -26,8 +26,6 @@ def apply_modifiers(operator, use_shapekeys_util: bool, remove_non_render_mod: b
     print(f"Start Apply Modifiers: {obj.name}")
     # オブジェクトのモディファイアを適用
     if use_shapekeys_util:
-        print(f"{obj.name} has shapekey ({len(obj.data.shape_keys.key_blocks)})")
-        # オブジェクトにシェイプキーがあったら
         try:
             # ShapeKeysUtil連携
             # ShapeKeysUtilが導入されていたらシェイプキーつきオブジェクトでもモディファイア適用

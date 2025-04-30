@@ -19,9 +19,10 @@
 import bpy
 from .. import consts
 from .utils import func_object_utils
+from ..funcs import func_update_mesh_deform_addon
 
 
-def apply_modifiers(operator, use_shapekeys_util: bool, remove_non_render_mod: bool):
+def apply_modifiers(operator, use_shapekeys_util: bool, remove_non_render_mod: bool, use_update_mesh_deform_addon: bool):
     obj = func_object_utils.get_active_object()
     print(f"Start Apply Modifiers: {obj.name}")
     # オブジェクトのモディファイアを適用
@@ -44,6 +45,11 @@ def apply_modifiers(operator, use_shapekeys_util: bool, remove_non_render_mod: b
             return True
         
         for modifier in obj.modifiers:
+            if use_update_mesh_deform_addon:
+                func_update_mesh_deform_addon.update_mesh_deform_addon(
+                    obj=obj, 
+                    modifier=modifier, 
+                    use_update_mesh_deform_addon=use_update_mesh_deform_addon)
             if modifier.name.startswith(consts.FORCE_KEEP_MODIFIER_PREFIX):
                 # モディファイア名がFORCE_KEEP_MODIFIER_PREFIXで始まっているなら無視
                 print(f"Force Keep: [{modifier.name}]")

@@ -57,7 +57,8 @@ class OBJECT_OT_specials_merge_selections(bpy.types.Operator):
             func_apply_modifier_and_merge_selections.apply_modifier_and_merge_selections(
                 operator=self,
                 use_shapekeys_util=addon_prefs.apply_modifiers_with_shapekeys,
-                remove_non_render_mod=self.remove_non_render_mod
+                remove_non_render_mod=self.remove_non_render_mod,
+                use_update_mesh_deform_addon=addon_prefs.use_update_mesh_deform_addon
             )
             return {'FINISHED'}
         except Exception as e:

@@ -40,6 +40,7 @@ def merge_children_main(operator, settings_1: func_merge_children_recursive.Sett
     print("start merge_children_main")
 
     print(f"use_shapekeys_util: {settings_1.use_shapekeys_util}")
+    print(f"use_update_mesh_deform_addon: {settings_1.use_update_mesh_deform_addon}")
     print(f"remove_non_render_mod: {settings_1.remove_non_render_mod}")
     print(f"ignore_dont_merge_to_parent_group: {settings_1.ignore_dont_merge_to_parent_group}")
     print(f"reparent_if_object_hidden: {settings_1.reparent_if_object_hidden}")

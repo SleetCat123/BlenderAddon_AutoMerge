@@ -28,20 +28,24 @@ class OBJECT_OT_merge_children_grouped_for_exporter_addon(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     use_shapekeys_util: BoolProperty(default=True)
+    use_update_mesh_deform_addon: BoolProperty(default=True)
     remove_non_render_mod: BoolProperty(default=True)
     use_variants_merge: BoolProperty(default=True)
 
     def execute(self, context):
         settings_1 = func_merge_children_recursive.Settings()
         settings_1.use_shapekeys_util = self.use_shapekeys_util
+        settings_1.use_update_mesh_deform_addon = self.use_update_mesh_deform_addon
         settings_1.remove_non_render_mod = self.remove_non_render_mod
         settings_1.ignore_dont_merge_to_parent_group = True
         settings_1.reparent_if_object_hidden = True
+
         settings_2 = func_merge_children_main.Settings()
         settings_2.use_variants_merge = self.use_variants_merge
         settings_2.only_grouped = True
         settings_2.root_is_selected = False
         settings_2.restore_selection = True
+        
         func_merge_children_main.merge_children_main(
             operator=self,
             settings_1=settings_1,

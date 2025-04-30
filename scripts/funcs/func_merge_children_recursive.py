@@ -26,6 +26,8 @@ from .utils import func_object_utils, func_custom_props_utils
 
 class Settings:
     use_shapekeys_util: bool
+    use_update_mesh_deform_addon: bool
+    
     remove_non_render_mod: bool
     ignore_dont_merge_to_parent_group: bool # DONT_MERGE_TO_PARENT_GROUP_NAMEに属するオブジェクトを無視する
     reparent_if_object_hidden: bool
@@ -33,11 +35,11 @@ class Settings:
 
     def __init__(self):
         self.use_shapekeys_util = True
+        self.use_update_mesh_deform_addon = True
         self.remove_non_render_mod = True
         self.ignore_dont_merge_to_parent_group = True
         self.reparent_if_object_hidden = True
         self.variants_name = ""
-
 
 def merge_children_recursive(operator, settings: Settings, target: bpy.types.Object):
     temp_children_name_table.update_table()
@@ -99,6 +101,7 @@ def internal_merge_children_recursive(operator, settings: Settings, target: bpy.
     apply_modifier_and_merge_selections(
         operator=operator,
         use_shapekeys_util=settings.use_shapekeys_util,
-        remove_non_render_mod=settings.remove_non_render_mod
+        remove_non_render_mod=settings.remove_non_render_mod,
+        use_update_mesh_deform_addon=settings.use_update_mesh_deform_addon
     )
     

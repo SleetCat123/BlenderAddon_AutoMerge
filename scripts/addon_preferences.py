@@ -20,13 +20,14 @@ import bpy
 from bpy.props import BoolProperty
 from .funcs import func_warning_slow_method
 from .funcs.utils import func_package_utils
-from .link import func_link_with_ShapeKeysUtil
+from .link import func_link_with_ShapeKeysUtil, func_link_with_MeshDeformUtils
 
 
 class addon_preferences(bpy.types.AddonPreferences):
     bl_idname = func_package_utils.get_package_root()
 
     apply_modifiers_with_shapekeys: BoolProperty(name="Apply Modifier with Shape Keys", default=True)
+    use_update_mesh_deform_addon: BoolProperty(name="Use Update Mesh Deform Addon", default=True)
 
     def draw(self, context):
         layout = self.layout
@@ -37,6 +38,8 @@ class addon_preferences(bpy.types.AddonPreferences):
             box.label(text='AutoMerge - ShapeKey Utils')
             func_warning_slow_method.box_warning_slow_method(box)
             box.prop(self, "apply_modifiers_with_shapekeys")
+        if func_link_with_MeshDeformUtils.update_mesh_deform_addon_is_found():
+            box.prop(self, "use_update_mesh_deform_addon")
 
 
 def register():

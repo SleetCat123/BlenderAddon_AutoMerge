@@ -103,6 +103,33 @@ https://sleetcatshop.booth.pm/items/1166452
     - Skirt  
   - Cube  
 
+### ◆Join Geometry
+`オブジェクトモードで右クリック → Auto Merge → Join Geometry`  
+アクティブオブジェクトに専用のGeometry Nodesモディファイアを追加し、選択中の全オブジェクト（アクティブ以外）をJoin Geometryノードで結合します。  
+
+- **特徴**
+  - 非破壊的な結合（元のオブジェクトは残る）
+  - Geometry Nodesを使用した高速な結合処理
+  - アクティブオブジェクトのモディファイアスタック内で処理
+
+### ◆Join Geometry Recursive
+`オブジェクトモードで右クリック → Auto Merge → Join Geometry Recursive`  
+アクティブオブジェクトに専用のGeometry Nodesモディファイアを追加し、選択中の全オブジェクト（アクティブ以外）とその再帰的子オブジェクトをJoin Geometryノードで結合します。  
+
+- **特徴**
+  - 選択オブジェクトの子階層も自動的に含める
+  - 複雑な階層構造の一括結合に便利
+  - 重複オブジェクトは自動除去
+
+### ◆Update Join Geometry
+`オブジェクトモードで右クリック → Auto Merge → Update Join Geometry`  
+既存のJoin Geometryノードグループを現在の選択オブジェクトに基づいて更新します。  
+
+- **特徴**
+  - 既存のノードグループの内容を最新状態に更新
+  - オブジェクトの追加・削除に対応
+  - モディファイア設定は保持
+
 ### ◇オブジェクトのプロパティによる特殊処理
 各種プロパティは  
 `オブジェクトモードの右クリックメニュー > Auto Merge`  

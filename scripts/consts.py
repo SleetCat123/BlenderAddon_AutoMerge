@@ -33,6 +33,10 @@ MULTIPLE_VARIANTS_PROP_NAME = "MizoresExporterVariants"  # オブジェクトの
 JOIN_GEOMETRY_NODE_GROUP_NAME = "MIZORE_AutoMerge_JoinGeometry"  # Join Geometry用ノードグループ名
 JOIN_GEOMETRY_MODIFIER_NAME = "MIZORE_AutoMerge_Join"  # Join Geometry用モディファイア名
 
+# 再帰的Join Geometry関連
+JOIN_GEOMETRY_NODE_GROUP_NAME_RECURSIVE = "MIZORE_AutoMerge_JoinGeometry_Recursive"  # 再帰的Join Geometry用ノードグループ名
+JOIN_GEOMETRY_MODIFIER_NAME_RECURSIVE = "MIZORE_AutoMerge_Join_Recursive"  # 再帰的Join Geometry用モディファイア名
+
 ADDON_NAME = "AutoMerge"
 
 def register():

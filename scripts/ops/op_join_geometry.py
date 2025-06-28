@@ -77,19 +77,28 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
             print(f"Join Geometry started: Active={active_obj.name}, Target objects={len(selected_objects)}")
 
             # Geometry Nodesモディファイアの取得または作成
+            # - 既存のアドオン専用モディファイアがあれば再利用
+            # - モディファイア名またはノードグループ名で判定
             modifier = self._get_or_create_geometry_modifier(active_obj)
             
             # ノードグループの取得または作成
+            # - アドオン専用のノードグループを検索
+            # - 存在しない場合は新規作成してJoin Geometryグラフを構築
             node_group = self._get_or_create_node_group()
             modifier.node_group = node_group
 
             # オブジェクトソケットの設定
+            # - 選択オブジェクト分のObjectソケットを動的作成
+            # - Object Infoノードを配置してJoin Geometryに接続
             self._setup_object_sockets(node_group, selected_objects)
             
             # モディファイアにオブジェクトを設定
+            # - 作成したソケットに実際のオブジェクトをデフォルト値として設定
+            # - 複数のAPI方式でバージョン互換性を確保
             self._assign_objects_to_modifier(modifier, selected_objects)
 
             # アクティブオブジェクトのみを選択状態に変更
+            # - 処理完了後の整理: 他のオブジェクトの選択を解除
             bpy.ops.object.select_all(action='DESELECT')
             active_obj.select_set(True)
             context.view_layer.objects.active = active_obj
@@ -207,10 +216,12 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
             return
 
         # 既存のオブジェクトソケットをクリア（オプション）
+        # clear_existing_objectsが有効な場合、古いソケットとノードを削除
         if self.clear_existing_objects:
             self._clear_existing_object_sockets(node_group, join_node)
 
         # 各選択オブジェクト用のソケットとノードを作成
+        # Group InputとGroup Outputノードを取得
         input_node = None
         output_node = None
         for node in nodes:
@@ -219,11 +230,13 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
             elif node.type == 'GROUP_OUTPUT':
                 output_node = node
         
+        # 各選択オブジェクトに対してソケットとノードを動的作成
         y_offset = -200
         for i, obj in enumerate(selected_objects):
             socket_name = f"Object_{i+1}_{obj.name}"
             
             # オブジェクトソケット作成（バージョン互換性対応）
+            # Group Inputにオブジェクト用のソケットを追加
             try:
                 # Blender 3.4以降のinterface API
                 if hasattr(node_group, 'interface') and hasattr(node_group.interface, 'new_socket'):
@@ -240,25 +253,29 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
                     continue
             
             # Object Infoノード作成
+            # 各オブジェクトのジオメトリを取得するためのノードを配置
             obj_info_node = nodes.new("GeometryNodeObjectInfo")
             obj_info_node.location = (-200, y_offset)
             obj_info_node.name = f"ObjectInfo_{obj.name}"
             obj_info_node.transform_space = 'ORIGINAL'
             
             # 接続
+            # Group Input -> Object Info -> Join Geometry の接続を作成
             if input_node:
                 links.new(input_node.outputs[socket_name], obj_info_node.inputs["Object"])
             links.new(obj_info_node.outputs["Geometry"], join_node.inputs["Geometry"])
             
+            # 次のノードの位置を調整
             y_offset -= 150
             print(f"Created object socket: {socket_name}")
 
         # レイアウト調整
+        # Group Outputノードの位置をオブジェクト数に応じて調整
         if output_node:
             output_node.location = (200 + len(selected_objects) * 50, 0)
 
     def _assign_objects_to_modifier(self, modifier, selected_objects):
-        """モディファイアの各オブジェクトソケットに実際のオブジェクトを設定"""
+        """モディファイアの各オブジェクトソケットに実際のオブジェクトを設定（デフォルト値対応）"""
         print(f"Debug: Assigning objects to modifier '{modifier.name}'")
         print(f"Debug: Modifier type: {modifier.type}")
         print(f"Debug: Node group: {modifier.node_group.name if modifier.node_group else 'None'}")
@@ -267,53 +284,121 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
             print("Warning: No node group found in modifier")
             return
         
-        # ノードグループのソケット情報をデバッグ出力
+        # オブジェクトソケットの名前とインデックスのマッピングを作成
+        # ノードグループのソケット情報をデバッグ出力しつつマッピングを構築
+        socket_mapping = {}
         node_group = modifier.node_group
-        print(f"Debug: Available input sockets in node group:")
         
-        # Blender 3.x以降のinterface API
         try:
+            # Blender 3.4以降のinterface API
             if hasattr(node_group, 'interface') and hasattr(node_group.interface, 'items_tree'):
                 for idx, socket in enumerate(node_group.interface.items_tree):
                     if socket.in_out == 'INPUT':
-                        print(f"  [{idx}] {socket.name} ({socket.socket_type})")
+                        socket_mapping[socket.name] = idx
+                        print(f"  Socket[{idx}]: {socket.name} ({socket.socket_type})")
+            # より古いバージョン用のフォールバック（Blender 2.92-3.3）
             elif hasattr(node_group, 'inputs'):
-                # より古いバージョン用のフォールバック
                 for idx, socket in enumerate(node_group.inputs):
-                    print(f"  [{idx}] {socket.name} ({socket.bl_idname})")
+                    socket_mapping[socket.name] = idx
+                    print(f"  Socket[{idx}]: {socket.name} ({getattr(socket, 'bl_idname', 'Unknown')})")
         except Exception as e:
-            print(f"Debug: Error listing sockets: {str(e)}")
+            print(f"Debug: Error mapping sockets: {str(e)}")
         
+        # オブジェクトを各ソケットに設定
         for i, obj in enumerate(selected_objects):
             socket_name = f"Object_{i+1}_{obj.name}"
             print(f"Debug: Attempting to assign object '{obj.name}' to socket '{socket_name}'")
             
+            success = False
+            
+            # 方法1: モディファイアのnode_groupから直接デフォルト値を設定
+            # ノードグループのソケットに直接デフォルト値を設定する方法
             try:
-                if hasattr(modifier, socket_name):
-                    setattr(modifier, socket_name, obj)
-                    print(f"Assigned object using setattr: {socket_name} = {obj.name}")
+                if socket_name in socket_mapping:
+                    socket_idx = socket_mapping[socket_name]
                     
-                    # 設定が成功したかを確認
-                    if hasattr(modifier, socket_name):
-                        assigned_obj = getattr(modifier, socket_name)
-                        if assigned_obj == obj:
-                            print(f"Verification: Object successfully assigned and verified")
-                        else:
-                            print(f"Verification: Assignment failed - got {assigned_obj}")
-                    continue
-                
-                # プロパティが見つからない場合の警告
-                print(f"Warning: Property '{socket_name}' not found in modifier")
-                print(f"Available modifier properties:")
-                for attr in dir(modifier):
-                    if not attr.startswith('_') and ('Object' in attr or 'Input' in attr):
-                        print(f"  - {attr}")
+                    # 新しいinterface API (Blender 3.4+)
+                    if hasattr(node_group, 'interface') and hasattr(node_group.interface, 'items_tree'):
+                        for socket in node_group.interface.items_tree:
+                            if socket.name == socket_name and socket.in_out == 'INPUT':
+                                if hasattr(socket, 'default_value'):
+                                    socket.default_value = obj
+                                    print(f"Set default_value via interface: {socket_name} = {obj.name}")
+                                    success = True
+                                    break
+                    
+                    # 古いAPI (Blender 2.92-3.3)
+                    elif hasattr(node_group, 'inputs') and socket_idx < len(node_group.inputs):
+                        input_socket = node_group.inputs[socket_idx]
+                        if hasattr(input_socket, 'default_value'):
+                            input_socket.default_value = obj
+                            print(f"Set default_value via inputs: {socket_name} = {obj.name}")
+                            success = True
                         
             except Exception as e:
-                print(f"Error assigning object {obj.name} to socket {socket_name}: {str(e)}")
+                print(f"Method 1 (default_value) failed: {str(e)}")
+            
+            if success:
+                continue
+            
+            # 方法2: モディファイアのプロパティとして設定
+            # モディファイアに動的に作成されるプロパティ名を試行
+            try:
+                # 複数のプロパティ名パターンを試す
+                property_names = [
+                    socket_name,  # Object_1_Cube
+                    f"[{socket_name}]",  # [Object_1_Cube]
+                    f"Input_{socket_mapping.get(socket_name, i+1)}_{socket_name}",  # Input_2_Object_1_Cube
+                    f"Input_{socket_mapping.get(socket_name, i+1)}",  # Input_2
+                ]
+                
+                for prop_name in property_names:
+                    if hasattr(modifier, prop_name):
+                        setattr(modifier, prop_name, obj)
+                        print(f"Set property: {prop_name} = {obj.name}")
+                        
+                        # 検証: 設定が成功したかを確認
+                        if hasattr(modifier, prop_name):
+                            assigned_obj = getattr(modifier, prop_name)
+                            if assigned_obj == obj:
+                                print(f"Verification: Success")
+                                success = True
+                                break
+                        
+            except Exception as e:
+                print(f"Method 2 (property) failed: {str(e)}")
+            
+            if success:
+                continue
+            
+            # 方法3: Dictionary-style access (最新バージョン用)
+            # Blender 4.0+で利用可能な辞書式アクセス
+            try:
+                if hasattr(modifier, '__setitem__') and hasattr(modifier, '__getitem__'):
+                    modifier[socket_name] = obj
+                    print(f"Set via dict access: {socket_name} = {obj.name}")
+                    
+                    # 検証: 設定が成功したかを確認
+                    if socket_name in modifier and modifier[socket_name] == obj:
+                        print(f"Verification: Success")
+                        success = True
+                        
+            except Exception as e:
+                print(f"Method 3 (dict access) failed: {str(e)}")
+            
+            # 全ての方法が失敗した場合の警告とデバッグ情報
+            if not success:
+                print(f"Warning: Could not assign object '{obj.name}' to socket '{socket_name}' automatically")
+                print(f"Available modifier attributes containing 'Input' or 'Object':")
+                for attr in sorted(dir(modifier)):
+                    if not attr.startswith('_') and ('Input' in attr or 'Object' in attr):
+                        try:
+                            value = getattr(modifier, attr)
+                            print(f"  - {attr}: {type(value).__name__}")
+                        except:
+                            print(f"  - {attr}: <access error>")
         
         print(f"Debug: Object assignment completed for modifier '{modifier.name}'")
-        print(f"Note: If objects are not assigned automatically, please set them manually in the modifier properties panel")
 
     def _clear_existing_object_sockets(self, node_group, join_node):
         """既存のオブジェクト関連ソケットとノードをクリア"""

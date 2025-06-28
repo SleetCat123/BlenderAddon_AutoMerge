@@ -22,6 +22,8 @@ from ..ops import (
     op_merge_selections,
     op_join_geometry,
     op_join_geometry_recursive,
+    op_join_geometry_to_new,
+    op_join_geometry_recursive_to_new,
     op_update_join_geometry,
 )
 from ..assign_prop_panel import op_assign_prop
@@ -53,7 +55,10 @@ class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
         self.layout.separator()
         
         self.layout.operator(op_join_geometry.OBJECT_OT_automerge_join_geometry_nodes.bl_idname)
+        self.layout.operator(op_join_geometry_to_new.OBJECT_OT_automerge_join_geometry_to_new.bl_idname)
+        self.layout.separator()
         self.layout.operator(op_join_geometry_recursive.OBJECT_OT_automerge_join_geometry_recursive.bl_idname)
+        self.layout.operator(op_join_geometry_recursive_to_new.OBJECT_OT_automerge_join_geometry_recursive_to_new.bl_idname)
         self.layout.operator(op_update_join_geometry.OBJECT_OT_automerge_update_join_geometry.bl_idname)
 
         self.layout.separator()

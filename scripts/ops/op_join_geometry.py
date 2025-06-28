@@ -107,13 +107,21 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
 
     def _get_or_create_geometry_modifier(self, obj):
         """アクティブオブジェクトにGeometry Nodesモディファイアを取得または作成"""
-        # 既存のモディファイアを検索（ノードグループ名で判定）
+        # 既存のモディファイアを検索（モディファイア名またはノードグループ名で判定）
         for modifier in obj.modifiers:
-            if (modifier.type == 'NODES' 
-                and modifier.node_group 
-                and modifier.node_group.name == self.node_group_name):
-                print(f"Reusing existing Geometry Nodes modifier: {modifier.name}")
-                return modifier
+            if modifier.type == 'NODES':
+                # モディファイア名での判定（アドオン専用名）
+                is_modifier_match = (modifier.name == self.modifier_name or 
+                                   modifier.name.startswith(consts.JOIN_GEOMETRY_MODIFIER_NAME))
+                
+                # ノードグループ名での判定（アドオン専用名）
+                is_nodegroup_match = (modifier.node_group and 
+                                    modifier.node_group.name == self.node_group_name)
+                
+                # どちらか片方が条件を満たしたら再利用
+                if is_modifier_match or is_nodegroup_match:
+                    print(f"Reusing existing Geometry Nodes modifier: {modifier.name} (Match: modifier={is_modifier_match}, nodegroup={is_nodegroup_match})")
+                    return modifier
         
         # 新規モディファイア作成
         modifier = obj.modifiers.new(self.modifier_name, 'NODES')

@@ -13,28 +13,28 @@ from ..funcs.utils import func_package_utils
 
 
 class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
-    """アクティブオブジェクトに選択中の全オブジェクトをGeometry NodesでJoin Geometryするオペレーター"""
+    """Join selected objects to active object using Geometry Nodes Join Geometry"""
     bl_idname = "object.automerge_join_geometry_nodes"
     bl_label = "Join Geometry Nodes"
-    bl_description = "選択中の全オブジェクトをアクティブオブジェクトにGeometry NodesでJoin Geometryします"
+    bl_description = "Join all selected objects to active object using Geometry Nodes Join Geometry"
     bl_options = {'REGISTER', 'UNDO'}
 
     node_group_name: StringProperty(
         name="Node Group Name",
         default=consts.JOIN_GEOMETRY_NODE_GROUP_NAME,
-        description="Geometry Nodesのノードグループ名"
+        description="Name of the Geometry Nodes node group"
     )
 
     modifier_name: StringProperty(
         name="Modifier Name", 
         default=consts.JOIN_GEOMETRY_MODIFIER_NAME,
-        description="作成するモディファイア名"
+        description="Name of the modifier to create"
     )
 
     clear_existing_objects: BoolProperty(
         name="Clear Existing Objects",
         default=True,
-        description="既存のJoinGeometryオブジェクトソケットをクリアしてから新しいオブジェクトを設定"
+        description="Clear existing Join Geometry object sockets before setting new objects"
     )
 
     @classmethod
@@ -58,14 +58,22 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
         """オペレーターのメイン処理"""
         try:
             active_obj = context.active_object
+            
+            # アクティブオブジェクトがMESHタイプかどうか確認
+            if not active_obj or active_obj.type != 'MESH':
+                error_msg = f"Active object is not a mesh object (Type: {active_obj.type if active_obj else 'None'})"
+                print(f"Join Geometry Error: {error_msg}")
+                self.report({'ERROR'}, "Active object is not a mesh object")
+                return {'CANCELLED'}
+            
             selected_objects = [obj for obj in context.selected_objects if obj != active_obj and obj.type == 'MESH']
             
             if not selected_objects:
-                self.report({'WARNING'}, "アクティブオブジェクト以外の有効なメッシュオブジェクトが選択されていません")
+                self.report({'WARNING'}, "No valid mesh objects selected other than active object")
                 return {'CANCELLED'}
 
             # ログ出力: 処理開始
-            print(f"Join Geometry処理開始: アクティブ={active_obj.name}, 対象オブジェクト数={len(selected_objects)}")
+            print(f"Join Geometry started: Active={active_obj.name}, Target objects={len(selected_objects)}")
 
             # Geometry Nodesモディファイアの取得または作成
             modifier = self._get_or_create_geometry_modifier(active_obj)
@@ -83,8 +91,8 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
             context.view_layer.objects.active = active_obj
 
             # ログ出力: 処理完了
-            print(f"Join Geometry処理完了: モディファイア={modifier.name}, ノードグループ={node_group.name}")
-            self.report({'INFO'}, f"Join Geometry完了: {len(selected_objects)}個のオブジェクトを結合しました")
+            print(f"Join Geometry completed: Modifier={modifier.name}, Node Group={node_group.name}")
+            self.report({'INFO'}, f"Join Geometry completed: {len(selected_objects)} objects joined")
             return {'FINISHED'}
 
         except Exception as e:
@@ -93,7 +101,7 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
             bpy.ops.ed.undo()
             bpy.ops.ed.undo_push(message="Restore point")
             traceback.print_exc()
-            print(f"Join Geometryエラー: {str(e)}")
+            print(f"Join Geometry Error: {str(e)}")
             self.report({'ERROR'}, str(e))
             return {'CANCELLED'}
 
@@ -104,12 +112,12 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
             if (modifier.type == 'NODES' 
                 and modifier.node_group 
                 and modifier.node_group.name == self.node_group_name):
-                print(f"既存のGeometry Nodesモディファイアを再利用: {modifier.name}")
+                print(f"Reusing existing Geometry Nodes modifier: {modifier.name}")
                 return modifier
         
         # 新規モディファイア作成
         modifier = obj.modifiers.new(self.modifier_name, 'NODES')
-        print(f"新規Geometry Nodesモディファイア作成: {modifier.name}")
+        print(f"Created new Geometry Nodes modifier: {modifier.name}")
         return modifier
 
     def _get_or_create_node_group(self):
@@ -117,13 +125,13 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
         # 既存のノードグループを検索
         if self.node_group_name in bpy.data.node_groups:
             node_group = bpy.data.node_groups[self.node_group_name]
-            print(f"既存のノードグループを再利用: {node_group.name}")
+            print(f"Reusing existing node group: {node_group.name}")
             return node_group
 
         # 新規ノードグループ作成
         node_group = bpy.data.node_groups.new(self.node_group_name, 'GeometryNodeTree')
         self._create_node_graph(node_group)
-        print(f"新規ノードグループ作成: {node_group.name}")
+        print(f"Created new node group: {node_group.name}")
         return node_group
 
     def _create_node_graph(self, node_group):
@@ -152,7 +160,7 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
         links.new(input_node.outputs["Geometry"], join_node.inputs["Geometry"])
         links.new(join_node.outputs["Geometry"], output_node.inputs["Geometry"])
 
-        print("基本ノードグラフを作成しました")
+        print("Created basic node graph")
 
     def _setup_object_sockets(self, node_group, selected_objects):
         """選択オブジェクト用のソケットとノードを設定"""
@@ -166,7 +174,7 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
                 break
                 
         if not join_node:
-            print("Join Geometryノードが見つかりません")
+            print("Join Geometry node not found")
             return
 
         # 既存のオブジェクトソケットをクリア（オプション）
@@ -201,7 +209,7 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
             links.new(obj_info_node.outputs["Geometry"], join_node.inputs["Geometry"])
             
             y_offset -= 150
-            print(f"オブジェクトソケット作成: {socket_name}")
+            print(f"Created object socket: {socket_name}")
 
         # レイアウト調整
         if output_node:
@@ -217,7 +225,7 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
         
         for node in nodes_to_remove:
             node_group.nodes.remove(node)
-            print(f"既存ObjectInfoノードを削除: {node.name}")
+            print(f"Removed existing ObjectInfo node: {node.name}")
 
         # オブジェクトソケットを削除（Geometry以外）
         sockets_to_remove = []
@@ -229,19 +237,28 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
         
         for socket in sockets_to_remove:
             node_group.interface.remove(socket)
-            print(f"既存オブジェクトソケットを削除: {socket.name}")
+            print(f"Removed existing object socket: {socket.name}")
 
 
 # 翻訳辞書
 translations_dict = {
     "ja_JP": {
-        ("*", "選択中の全オブジェクトをアクティブオブジェクトにGeometry NodesでJoin Geometryします"): "選択中の全オブジェクトをアクティブオブジェクトにGeometry NodesでJoin Geometryします",
+        # オペレーター説明
+        ("*", "Join all selected objects to active object using Geometry Nodes Join Geometry"): "選択中の全オブジェクトをアクティブオブジェクトにGeometry NodesでJoin Geometryします",
+        
+        # プロパティ名
         ("*", "Node Group Name"): "ノードグループ名",
-        ("*", "Geometry Nodesのノードグループ名"): "Geometry Nodesのノードグループ名",
         ("*", "Modifier Name"): "モディファイア名",
-        ("*", "作成するモディファイア名"): "作成するモディファイア名",
         ("*", "Clear Existing Objects"): "既存オブジェクトをクリア",
-        ("*", "既存のJoinGeometryオブジェクトソケットをクリアしてから新しいオブジェクトを設定"): "既存のJoinGeometryオブジェクトソケットをクリアしてから新しいオブジェクトを設定",
+        
+        # プロパティ説明
+        ("*", "Name of the Geometry Nodes node group"): "Geometry Nodesのノードグループ名",
+        ("*", "Name of the modifier to create"): "作成するモディファイア名",
+        ("*", "Clear existing Join Geometry object sockets before setting new objects"): "既存のJoinGeometryオブジェクトソケットをクリアしてから新しいオブジェクトを設定",
+        
+        # エラー・警告メッセージ
+        ("*", "Active object is not a mesh object"): "アクティブオブジェクトがメッシュオブジェクトではありません",
+        ("*", "No valid mesh objects selected other than active object"): "アクティブオブジェクト以外の有効なメッシュオブジェクトが選択されていません",
     },
 }
 

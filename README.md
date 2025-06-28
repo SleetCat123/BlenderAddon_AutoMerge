@@ -123,12 +123,20 @@ https://sleetcatshop.booth.pm/items/1166452
 
 ### ◆Update Join Geometry
 `オブジェクトモードで右クリック → Auto Merge → Update Join Geometry`  
-既存のJoin Geometryノードグループを現在の選択オブジェクトに基づいて更新します。  
+選択オブジェクトの中から既存のJoin Geometry Recursiveモディファイアを検索し、現在の対象オブジェクトの階層状態に基づいて更新します。  
 
 - **特徴**
+  - 全選択オブジェクトを対象にモディファイア検索
+  - Join Geometry Recursiveモディファイアのみが対象
+  - 最初に見つかったモディファイアを更新
   - 既存のノードグループの内容を最新状態に更新
-  - オブジェクトの追加・削除に対応
+  - オブジェクトの追加・削除・階層変更に対応
   - モディファイア設定は保持
+
+- **使用方法**
+  1. Join Geometry Recursiveモディファイアを持つオブジェクトを含めて複数オブジェクトを選択
+  2. Update Join Geometryを実行
+  3. 選択オブジェクトの中で最初に見つかったJoin Geometry Recursiveモディファイアが更新される
 
 ### ◇オブジェクトのプロパティによる特殊処理
 各種プロパティは  

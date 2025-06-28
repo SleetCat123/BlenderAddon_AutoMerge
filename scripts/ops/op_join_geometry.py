@@ -321,11 +321,11 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
         nodes_to_remove = []
         for node in node_group.nodes:
             if node.type == 'OBJECT_INFO' and node.name.startswith("ObjectInfo_"):
-                nodes_to_remove.append(node)
+                nodes_to_remove.append((node, node.name))  # ノードと名前をタプルで保存
         
-        for node in nodes_to_remove:
+        for node, node_name in nodes_to_remove:
             node_group.nodes.remove(node)
-            print(f"Removed existing ObjectInfo node: {node.name}")
+            print(f"Removed existing ObjectInfo node: {node_name}")
 
         # オブジェクトソケットを削除（Geometry以外、バージョン互換性対応）
         try:
@@ -336,22 +336,22 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
                     if (socket.in_out == 'INPUT' 
                         and socket.socket_type == 'NodeSocketObject' 
                         and socket.name.startswith("Object_")):
-                        sockets_to_remove.append(socket)
+                        sockets_to_remove.append((socket, socket.name))  # ソケットと名前をタプルで保存
                 
-                for socket in sockets_to_remove:
+                for socket, socket_name in sockets_to_remove:
                     node_group.interface.remove(socket)
-                    print(f"Removed existing object socket: {socket.name}")
+                    print(f"Removed existing object socket: {socket_name}")
             else:
                 # 古いバージョン用のフォールバック
                 inputs_to_remove = []
                 for socket in node_group.inputs:
                     if (hasattr(socket, 'bl_idname') and socket.bl_idname == 'NodeSocketObject' 
                         and socket.name.startswith("Object_")):
-                        inputs_to_remove.append(socket)
+                        inputs_to_remove.append((socket, socket.name))  # ソケットと名前をタプルで保存
                 
-                for socket in inputs_to_remove:
+                for socket, socket_name in inputs_to_remove:
                     node_group.inputs.remove(socket)
-                    print(f"Removed existing object socket: {socket.name}")
+                    print(f"Removed existing object socket: {socket_name}")
         except Exception as e:
             print(f"Warning: Could not clear existing object sockets: {str(e)}")
 

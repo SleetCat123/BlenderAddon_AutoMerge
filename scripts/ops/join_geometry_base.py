@@ -238,6 +238,9 @@ class JoinGeometryBase:
             # モディファイアにオブジェクトを設定
             self.assign_objects_to_modifier(modifier, valid_objects)
 
+            # Join対象オブジェクトからArmatureモディファイアをコピー
+            self.copy_armature_modifiers(valid_objects, active_obj)
+
             # アクティブオブジェクトのみを選択状態に変更
             bpy.ops.object.select_all(action='DESELECT')
             active_obj.select_set(True)
@@ -256,6 +259,55 @@ class JoinGeometryBase:
             error_message = f"{log_message} Error: {str(e)}"
             print(error_message)
             return {'CANCELLED'}, error_message
+
+    def copy_armature_modifiers(self, source_objects, target_obj):
+        """ソースオブジェクトからターゲットオブジェクトにArmatureモディファイアをコピー（重複回避）"""
+        # ターゲットオブジェクトが持つ既存のArmatureを収集
+        existing_armatures = set()
+        for modifier in target_obj.modifiers:
+            if modifier.type == 'ARMATURE' and modifier.object:
+                existing_armatures.add(modifier.object)
+        
+        # ソースオブジェクトからArmatureモディファイアを検索
+        copied_count = 0
+        for source_obj in source_objects:
+            if source_obj.type != 'MESH':
+                continue
+                
+            for modifier in source_obj.modifiers:
+                if modifier.type != 'ARMATURE' or not modifier.object:
+                    continue
+                
+                # 既に同じArmatureを対象とするモディファイアがある場合はスキップ
+                if modifier.object in existing_armatures:
+                    print(f"Armatureモディファイア '{modifier.name}' (Armature: {modifier.object.name}) は既に存在するためスキップ")
+                    continue
+                
+                # Armatureモディファイアをコピー
+                try:
+                    new_modifier = target_obj.modifiers.new(modifier.name, 'ARMATURE')
+                    new_modifier.object = modifier.object
+                    new_modifier.use_vertex_groups = modifier.use_vertex_groups
+                    new_modifier.use_bone_envelopes = modifier.use_bone_envelopes
+                    new_modifier.use_deform_preserve_volume = modifier.use_deform_preserve_volume
+                    
+                    # バージョン互換性のためのプロパティコピー
+                    if hasattr(modifier, 'invert_vertex_group'):
+                        new_modifier.invert_vertex_group = modifier.invert_vertex_group
+                    if hasattr(modifier, 'vertex_group'):
+                        new_modifier.vertex_group = modifier.vertex_group
+                    
+                    existing_armatures.add(modifier.object)
+                    copied_count += 1
+                    print(f"Armatureモディファイア '{modifier.name}' を {source_obj.name} から {target_obj.name} にコピーしました")
+                    
+                except Exception as e:
+                    print(f"Armatureモディファイア '{modifier.name}' のコピーに失敗: {str(e)}")
+        
+        if copied_count > 0:
+            print(f"合計 {copied_count} 個のArmatureモディファイアをコピーしました")
+        else:
+            print("コピー対象のArmatureモディファイアはありませんでした")
 
     def get_modifier_target_objects(self, modifier):
         """モディファイアから設定されているオブジェクトを取得"""

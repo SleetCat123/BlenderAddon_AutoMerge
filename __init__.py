@@ -56,6 +56,7 @@ else:
     from .scripts.ops import (
         op_merge_children,
         op_merge_selections,
+        op_join_geometry,
     )
     from .scripts.variants import (
         panel_variants,
@@ -82,6 +83,7 @@ classes = [
 
     op_merge_children,
     op_merge_selections,
+    op_join_geometry,
 
     panel_variants,
     variants_prop,

@@ -49,10 +49,15 @@ class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
         # op.root_is_selected = True
 
         self.layout.operator(op_merge_selections.OBJECT_OT_specials_merge_selections.bl_idname)
+
+        self.layout.separator()
+        
         self.layout.operator(op_join_geometry.OBJECT_OT_automerge_join_geometry_nodes.bl_idname)
         self.layout.operator(op_join_geometry_recursive.OBJECT_OT_automerge_join_geometry_recursive.bl_idname)
         self.layout.operator(op_update_join_geometry.OBJECT_OT_automerge_update_join_geometry.bl_idname)
+
         self.layout.separator()
+
         label_base = bpy.app.translations.pgettext(op_assign_prop.OBJECT_OT_mizore_assign_prop.bl_idname + ".label")
 
         op = self.layout.operator(op_assign_prop.OBJECT_OT_mizore_assign_prop.bl_idname, text=label_base.format(consts.PARENTS_GROUP_NAME))

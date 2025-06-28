@@ -16,21 +16,14 @@ class OBJECT_OT_automerge_join_geometry_recursive_to_new(bpy.types.Operator):
     bl_description = "Join all selected objects and their recursive children to new empty mesh object using Geometry Nodes Join Geometry"
     bl_options = {'REGISTER', 'UNDO'}
 
-    new_object_name: StringProperty(
-        name="New Object Name",
-        default="JoinedGeometry_Recursive",
-        description="Name of the new mesh object to create"
-    )
+
 
     @classmethod
     def poll(cls, context):
         """実行可能条件: 1つ以上のMESHオブジェクトが選択されている"""
         return any(obj.type == 'MESH' for obj in context.selected_objects)
 
-    def draw(self, context):
-        """オペレーターのUI描画"""
-        layout = self.layout
-        layout.prop(self, "new_object_name")
+
 
     def execute(self, context):
         """オペレーターのメイン処理"""
@@ -45,9 +38,17 @@ class OBJECT_OT_automerge_join_geometry_recursive_to_new(bpy.types.Operator):
         for obj in selected_mesh_objects:
             print(f"  - {obj.name}")
 
+        # 新規オブジェクト名を動的に決定
+        if len(selected_mesh_objects) == 1:
+            # 単一オブジェクト選択時: オブジェクト名_Joined_Recursive
+            new_object_name = f"{selected_mesh_objects[0].name}_Joined_Recursive"
+        else:
+            # 複数オブジェクト選択時: デフォルト名
+            new_object_name = "JoinedGeometry_Recursive"
+
         # 新規空メッシュオブジェクトを作成
-        mesh = bpy.data.meshes.new(self.new_object_name)
-        new_obj = bpy.data.objects.new(self.new_object_name, mesh)
+        mesh = bpy.data.meshes.new(new_object_name)
+        new_obj = bpy.data.objects.new(new_object_name, mesh)
         
         # シーンに追加
         context.collection.objects.link(new_obj)
@@ -97,11 +98,7 @@ translations_dict = {
         # オペレーター説明
         ("*", "Join all selected objects and their recursive children to new empty mesh object using Geometry Nodes"): "選択中の全オブジェクトとその再帰的子オブジェクトを新規空メッシュオブジェクトにGeometry NodesでJoin Geometryします",
         
-        # プロパティ名
-        ("*", "New Object Name"): "新規オブジェクト名",
-        
-        # プロパティ説明
-        ("*", "Name of the new mesh object to create"): "作成する新規メッシュオブジェクト名",
+
         
         # エラー・警告メッセージ
         ("*", "No mesh objects selected"): "メッシュオブジェクトが選択されていません",

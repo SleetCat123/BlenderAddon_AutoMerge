@@ -146,7 +146,9 @@ https://sleetcatshop.booth.pm/items/1166452
   - 新規オブジェクトへの非破壊的結合
   - 元のオブジェクトは完全に保持される
   - アクティブオブジェクトを気にする必要がない
-  - 作成するオブジェクト名を指定可能（デフォルト: "JoinedGeometry"）
+  - オブジェクト名の自動決定:
+    - 単一オブジェクト選択時: `{オブジェクト名}_Joined`
+    - 複数オブジェクト選択時: `JoinedGeometry`
 
 ### ◆Join Geometry Recursive to New
 `オブジェクトモードで右クリック → Auto Merge → Join Geometry Recursive to New`  
@@ -157,7 +159,9 @@ https://sleetcatshop.booth.pm/items/1166452
   - 選択オブジェクトの子階層も自動的に含める
   - 元のオブジェクトは完全に保持される
   - 複雑な階層構造の結合に最適
-  - 作成するオブジェクト名を指定可能（デフォルト: "JoinedGeometry_Recursive"）
+  - オブジェクト名の自動決定:
+    - 単一オブジェクト選択時: `{オブジェクト名}_Joined_Recursive`
+    - 複数オブジェクト選択時: `JoinedGeometry_Recursive`
 
 ### ◇オブジェクトのプロパティによる特殊処理
 各種プロパティは  

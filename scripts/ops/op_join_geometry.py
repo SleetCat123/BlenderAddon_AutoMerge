@@ -8,7 +8,7 @@
 
 import bpy
 import traceback
-from bpy.props import BoolProperty, StringProperty
+from bpy.props import StringProperty
 from .. import consts
 from ..funcs.utils import func_package_utils
 
@@ -32,15 +32,9 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
         description="Name of the modifier to create"
     )
 
-    clear_existing_objects: BoolProperty(
-        name="Clear Existing Objects",
-        default=True,
-        description="Clear existing Join Geometry object sockets before setting new objects"
-    )
-
     @classmethod
     def poll(cls, context):
-        """実行可能条件: アクティブオブジェクトが存在し、複数のオブジェクトが選択されている（Blender 2.92+対応）"""
+        """実行可能条件: アクティブオブジェクトが存在し、複数のオブジェクトが選択されている"""
         return (
             context.active_object 
             and context.active_object.type == 'MESH'
@@ -52,8 +46,6 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
         layout = self.layout
         layout.prop(self, "node_group_name")
         layout.prop(self, "modifier_name")
-        layout.separator()
-        layout.prop(self, "clear_existing_objects")
 
     def execute(self, context):
         """オペレーターのメイン処理"""
@@ -62,8 +54,6 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
             
             # アクティブオブジェクトがMESHタイプかどうか確認
             if not active_obj or active_obj.type != 'MESH':
-                error_msg = f"Active object is not a mesh object (Type: {active_obj.type if active_obj else 'None'})"
-                print(f"Join Geometry Error: {error_msg}")
                 self.report({'ERROR'}, "Active object is not a mesh object")
                 return {'CANCELLED'}
             
@@ -73,38 +63,27 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
                 self.report({'WARNING'}, "No valid mesh objects selected other than active object")
                 return {'CANCELLED'}
 
-            # ログ出力: 処理開始
-            print(f"Join Geometry started: Active={active_obj.name}, Target objects={len(selected_objects)}")
+            print(f"Join Geometry: {active_obj.name} + {len(selected_objects)} objects")
 
             # Geometry Nodesモディファイアの取得または作成
-            # - 既存のアドオン専用モディファイアがあれば再利用
-            # - モディファイア名またはノードグループ名で判定
             modifier = self._get_or_create_geometry_modifier(active_obj)
             
-            # ノードグループの取得または作成
-            # - アドオン専用のノードグループを検索
-            # - 存在しない場合は新規作成してJoin Geometryグラフを構築
-            node_group = self._get_or_create_node_group()
+            # ノードグループの新規作成（Socket_Nカウンター問題回避のため）
+            node_group = self._create_new_node_group()
             modifier.node_group = node_group
 
             # オブジェクトソケットの設定
-            # - 選択オブジェクト分のObjectソケットを動的作成
-            # - Object Infoノードを配置してJoin Geometryに接続
             self._setup_object_sockets(node_group, selected_objects)
             
             # モディファイアにオブジェクトを設定
-            # - 作成したソケットに実際のオブジェクトをデフォルト値として設定
-            # - 複数のAPI方式でバージョン互換性を確保
             self._assign_objects_to_modifier(modifier, selected_objects)
 
             # アクティブオブジェクトのみを選択状態に変更
-            # - 処理完了後の整理: 他のオブジェクトの選択を解除
             bpy.ops.object.select_all(action='DESELECT')
             active_obj.select_set(True)
             context.view_layer.objects.active = active_obj
 
-            # ログ出力: 処理完了
-            print(f"Join Geometry completed: Modifier={modifier.name}, Node Group={node_group.name}")
+            print(f"Join Geometry completed: {len(selected_objects)} objects joined")
             self.report({'INFO'}, f"Join Geometry completed: {len(selected_objects)} objects joined")
             return {'FINISHED'}
 
@@ -133,26 +112,30 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
                 
                 # どちらか片方が条件を満たしたら再利用
                 if is_modifier_match or is_nodegroup_match:
-                    print(f"Reusing existing Geometry Nodes modifier: {modifier.name} (Match: modifier={is_modifier_match}, nodegroup={is_nodegroup_match})")
                     return modifier
         
         # 新規モディファイア作成
         modifier = obj.modifiers.new(self.modifier_name, 'NODES')
-        print(f"Created new Geometry Nodes modifier: {modifier.name}")
         return modifier
 
-    def _get_or_create_node_group(self):
-        """ノードグループを取得または作成"""
-        # 既存のノードグループを検索
-        if self.node_group_name in bpy.data.node_groups:
-            node_group = bpy.data.node_groups[self.node_group_name]
-            print(f"Reusing existing node group: {node_group.name}")
-            return node_group
-
-        # 新規ノードグループ作成
+    def _create_new_node_group(self):
+        """新規ノードグループを作成（Socket_Nカウンター問題回避のため既存削除）"""
+        # 既存のノードグループを検索して削除（Socket_Nカウンターリセットのため）
+        existing_groups = []
+        for node_group in bpy.data.node_groups:
+            if (node_group.name == self.node_group_name or 
+                node_group.name.startswith(self.node_group_name)):
+                existing_groups.append(node_group)
+        
+        for node_group in existing_groups:
+            try:
+                bpy.data.node_groups.remove(node_group)
+            except:
+                pass
+        
+        # 新規作成
         node_group = bpy.data.node_groups.new(self.node_group_name, 'GeometryNodeTree')
         self._create_node_graph(node_group)
-        print(f"Created new node group: {node_group.name}")
         return node_group
 
     def _create_node_graph(self, node_group):
@@ -177,12 +160,9 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
                 node_group.interface.new_socket("Geometry", in_out='OUTPUT', socket_type='NodeSocketGeometry')
             else:
                 # 古いバージョン用のフォールバック
-                if hasattr(node_group, 'inputs') and hasattr(node_group.inputs, 'new'):
-                    node_group.inputs.new('NodeSocketGeometry', "Geometry")
-                if hasattr(node_group, 'outputs') and hasattr(node_group.outputs, 'new'):
-                    node_group.outputs.new('NodeSocketGeometry', "Geometry")
-        except Exception as e:
-            print(f"Warning: Could not create geometry sockets: {str(e)}")
+                node_group.inputs.new('NodeSocketGeometry', "Geometry")
+                node_group.outputs.new('NodeSocketGeometry', "Geometry")
+        except:
             # 最後の手段として古い方法を試す
             try:
                 node_group.inputs.new('NodeSocketGeometry', "Geometry")
@@ -198,8 +178,6 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
         links.new(input_node.outputs["Geometry"], join_node.inputs["Geometry"])
         links.new(join_node.outputs["Geometry"], output_node.inputs["Geometry"])
 
-        print("Created basic node graph")
-
     def _setup_object_sockets(self, node_group, selected_objects):
         """選択オブジェクト用のソケットとノードを設定"""
         nodes = node_group.nodes
@@ -212,15 +190,8 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
                 break
                 
         if not join_node:
-            print("Join Geometry node not found")
             return
 
-        # 既存のオブジェクトソケットをクリア（オプション）
-        # clear_existing_objectsが有効な場合、古いソケットとノードを削除
-        if self.clear_existing_objects:
-            self._clear_existing_object_sockets(node_group, join_node)
-
-        # 各選択オブジェクト用のソケットとノードを作成
         # Group InputとGroup Outputノードを取得
         input_node = None
         output_node = None
@@ -236,7 +207,6 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
             socket_name = f"Object_{i+1}_{obj.name}"
             
             # オブジェクトソケット作成（バージョン互換性対応）
-            # Group Inputにオブジェクト用のソケットを追加
             try:
                 # Blender 3.4以降のinterface API
                 if hasattr(node_group, 'interface') and hasattr(node_group.interface, 'new_socket'):
@@ -244,48 +214,36 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
                 else:
                     # 古いバージョン用のフォールバック
                     obj_socket = node_group.inputs.new('NodeSocketObject', socket_name)
-            except Exception as e:
-                print(f"Warning: Could not create object socket {socket_name}: {str(e)}")
+            except:
                 try:
                     obj_socket = node_group.inputs.new('NodeSocketObject', socket_name)
                 except:
-                    print(f"Error: Failed to create object socket {socket_name}")
                     continue
             
             # Object Infoノード作成
-            # 各オブジェクトのジオメトリを取得するためのノードを配置
             obj_info_node = nodes.new("GeometryNodeObjectInfo")
             obj_info_node.location = (-200, y_offset)
             obj_info_node.name = f"ObjectInfo_{obj.name}"
-            obj_info_node.transform_space = 'ORIGINAL'
+            obj_info_node.transform_space = 'RELATIVE'  # 相対変換空間に設定
             
             # 接続
-            # Group Input -> Object Info -> Join Geometry の接続を作成
             if input_node:
                 links.new(input_node.outputs[socket_name], obj_info_node.inputs["Object"])
             links.new(obj_info_node.outputs["Geometry"], join_node.inputs["Geometry"])
             
             # 次のノードの位置を調整
             y_offset -= 150
-            print(f"Created object socket: {socket_name}")
 
         # レイアウト調整
-        # Group Outputノードの位置をオブジェクト数に応じて調整
         if output_node:
             output_node.location = (200 + len(selected_objects) * 50, 0)
 
     def _assign_objects_to_modifier(self, modifier, selected_objects):
-        """モディファイアの各オブジェクトソケットに実際のオブジェクトを設定（デフォルト値対応）"""
-        print(f"Debug: Assigning objects to modifier '{modifier.name}'")
-        print(f"Debug: Modifier type: {modifier.type}")
-        print(f"Debug: Node group: {modifier.node_group.name if modifier.node_group else 'None'}")
-        
+        """モディファイアの各オブジェクトソケットに実際のオブジェクトを設定"""
         if not modifier.node_group:
-            print("Warning: No node group found in modifier")
             return
         
         # オブジェクトソケットの名前とインデックスのマッピングを作成
-        # ノードグループのソケット情報をデバッグ出力しつつマッピングを構築
         socket_mapping = {}
         node_group = modifier.node_group
         
@@ -295,150 +253,34 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator):
                 for idx, socket in enumerate(node_group.interface.items_tree):
                     if socket.in_out == 'INPUT':
                         socket_mapping[socket.name] = idx
-                        print(f"  Socket[{idx}]: {socket.name} ({socket.socket_type})")
-            # より古いバージョン用のフォールバック（Blender 2.92-3.3）
+            # より古いバージョン用のフォールバック
             elif hasattr(node_group, 'inputs'):
                 for idx, socket in enumerate(node_group.inputs):
                     socket_mapping[socket.name] = idx
-                    print(f"  Socket[{idx}]: {socket.name} ({getattr(socket, 'bl_idname', 'Unknown')})")
-        except Exception as e:
-            print(f"Debug: Error mapping sockets: {str(e)}")
+        except:
+            return
         
-        # オブジェクトを各ソケットに設定
+        # 各オブジェクトをSocket_Nに設定
         for i, obj in enumerate(selected_objects):
-            socket_name = f"Object_{i+1}_{obj.name}"
-            print(f"Debug: Attempting to assign object '{obj.name}' to socket '{socket_name}'")
+            expected_socket_name = f"Object_{i+1}_{obj.name}"
             
-            success = False
-            
-            # 方法1: モディファイアのnode_groupから直接デフォルト値を設定
-            # ノードグループのソケットに直接デフォルト値を設定する方法
-            try:
-                if socket_name in socket_mapping:
-                    socket_idx = socket_mapping[socket_name]
-                    
-                    # 新しいinterface API (Blender 3.4+)
-                    if hasattr(node_group, 'interface') and hasattr(node_group.interface, 'items_tree'):
-                        for socket in node_group.interface.items_tree:
-                            if socket.name == socket_name and socket.in_out == 'INPUT':
-                                if hasattr(socket, 'default_value'):
-                                    socket.default_value = obj
-                                    print(f"Set default_value via interface: {socket_name} = {obj.name}")
-                                    success = True
-                                    break
-                    
-                    # 古いAPI (Blender 2.92-3.3)
-                    elif hasattr(node_group, 'inputs') and socket_idx < len(node_group.inputs):
-                        input_socket = node_group.inputs[socket_idx]
-                        if hasattr(input_socket, 'default_value'):
-                            input_socket.default_value = obj
-                            print(f"Set default_value via inputs: {socket_name} = {obj.name}")
-                            success = True
-                        
-            except Exception as e:
-                print(f"Method 1 (default_value) failed: {str(e)}")
-            
-            if success:
-                continue
-            
-            # 方法2: モディファイアのプロパティとして設定
-            # モディファイアに動的に作成されるプロパティ名を試行
-            try:
-                # 複数のプロパティ名パターンを試す
-                property_names = [
-                    socket_name,  # Object_1_Cube
-                    f"[{socket_name}]",  # [Object_1_Cube]
-                    f"Input_{socket_mapping.get(socket_name, i+1)}_{socket_name}",  # Input_2_Object_1_Cube
-                    f"Input_{socket_mapping.get(socket_name, i+1)}",  # Input_2
-                ]
+            if expected_socket_name in socket_mapping:
+                # インターフェースソケットのインデックスに対応するSocket_Nに設定
+                socket_index = socket_mapping[expected_socket_name]
+                socket_n_name = f"Socket_{socket_index}"
                 
-                for prop_name in property_names:
-                    if hasattr(modifier, prop_name):
-                        setattr(modifier, prop_name, obj)
-                        print(f"Set property: {prop_name} = {obj.name}")
-                        
-                        # 検証: 設定が成功したかを確認
-                        if hasattr(modifier, prop_name):
-                            assigned_obj = getattr(modifier, prop_name)
-                            if assigned_obj == obj:
-                                print(f"Verification: Success")
-                                success = True
-                                break
-                        
-            except Exception as e:
-                print(f"Method 2 (property) failed: {str(e)}")
-            
-            if success:
-                continue
-            
-            # 方法3: Dictionary-style access (最新バージョン用)
-            # Blender 4.0+で利用可能な辞書式アクセス
-            try:
-                if hasattr(modifier, '__setitem__') and hasattr(modifier, '__getitem__'):
-                    modifier[socket_name] = obj
-                    print(f"Set via dict access: {socket_name} = {obj.name}")
-                    
-                    # 検証: 設定が成功したかを確認
-                    if socket_name in modifier and modifier[socket_name] == obj:
-                        print(f"Verification: Success")
-                        success = True
-                        
-            except Exception as e:
-                print(f"Method 3 (dict access) failed: {str(e)}")
-            
-            # 全ての方法が失敗した場合の警告とデバッグ情報
-            if not success:
-                print(f"Warning: Could not assign object '{obj.name}' to socket '{socket_name}' automatically")
-                print(f"Available modifier attributes containing 'Input' or 'Object':")
-                for attr in sorted(dir(modifier)):
-                    if not attr.startswith('_') and ('Input' in attr or 'Object' in attr):
-                        try:
-                            value = getattr(modifier, attr)
-                            print(f"  - {attr}: {type(value).__name__}")
-                        except:
-                            print(f"  - {attr}: <access error>")
+                try:
+                    modifier[socket_n_name] = obj
+                except:
+                    pass
         
-        print(f"Debug: Object assignment completed for modifier '{modifier.name}'")
-
-    def _clear_existing_object_sockets(self, node_group, join_node):
-        """既存のオブジェクト関連ソケットとノードをクリア"""
-        # ObjectInfoノードを削除
-        nodes_to_remove = []
-        for node in node_group.nodes:
-            if node.type == 'OBJECT_INFO' and node.name.startswith("ObjectInfo_"):
-                nodes_to_remove.append((node, node.name))  # ノードと名前をタプルで保存
-        
-        for node, node_name in nodes_to_remove:
-            node_group.nodes.remove(node)
-            print(f"Removed existing ObjectInfo node: {node_name}")
-
-        # オブジェクトソケットを削除（Geometry以外、バージョン互換性対応）
+        # UI更新
         try:
-            # Blender 3.4以降のinterface API
-            if hasattr(node_group, 'interface') and hasattr(node_group.interface, 'items_tree'):
-                sockets_to_remove = []
-                for socket in node_group.interface.items_tree:
-                    if (socket.in_out == 'INPUT' 
-                        and socket.socket_type == 'NodeSocketObject' 
-                        and socket.name.startswith("Object_")):
-                        sockets_to_remove.append((socket, socket.name))  # ソケットと名前をタプルで保存
-                
-                for socket, socket_name in sockets_to_remove:
-                    node_group.interface.remove(socket)
-                    print(f"Removed existing object socket: {socket_name}")
-            else:
-                # 古いバージョン用のフォールバック
-                inputs_to_remove = []
-                for socket in node_group.inputs:
-                    if (hasattr(socket, 'bl_idname') and socket.bl_idname == 'NodeSocketObject' 
-                        and socket.name.startswith("Object_")):
-                        inputs_to_remove.append((socket, socket.name))  # ソケットと名前をタプルで保存
-                
-                for socket, socket_name in inputs_to_remove:
-                    node_group.inputs.remove(socket)
-                    print(f"Removed existing object socket: {socket_name}")
-        except Exception as e:
-            print(f"Warning: Could not clear existing object sockets: {str(e)}")
+            bpy.context.view_layer.update()
+            depsgraph = bpy.context.evaluated_depsgraph_get()
+            depsgraph.update()
+        except:
+            pass
 
 
 # 翻訳辞書
@@ -450,12 +292,10 @@ translations_dict = {
         # プロパティ名
         ("*", "Node Group Name"): "ノードグループ名",
         ("*", "Modifier Name"): "モディファイア名",
-        ("*", "Clear Existing Objects"): "既存オブジェクトをクリア",
         
         # プロパティ説明
         ("*", "Name of the Geometry Nodes node group"): "Geometry Nodesのノードグループ名",
         ("*", "Name of the modifier to create"): "作成するモディファイア名",
-        ("*", "Clear existing Join Geometry object sockets before setting new objects"): "既存のJoinGeometryオブジェクトソケットをクリアしてから新しいオブジェクトを設定",
         
         # エラー・警告メッセージ
         ("*", "Active object is not a mesh object"): "アクティブオブジェクトがメッシュオブジェクトではありません",

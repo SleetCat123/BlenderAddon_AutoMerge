@@ -138,6 +138,27 @@ https://sleetcatshop.booth.pm/items/1166452
   2. Update Join Geometryを実行
   3. 選択オブジェクトの中で最初に見つかったJoin Geometry Recursiveモディファイアが更新される
 
+### ◆Join Geometry to New
+`オブジェクトモードで右クリック → Auto Merge → Join Geometry to New`  
+新規の空メッシュオブジェクトを作成し、選択中の全オブジェクトをJoin Geometryノードで結合します。  
+
+- **特徴**
+  - 新規オブジェクトへの非破壊的結合
+  - 元のオブジェクトは完全に保持される
+  - アクティブオブジェクトを気にする必要がない
+  - 作成するオブジェクト名を指定可能（デフォルト: "JoinedGeometry"）
+
+### ◆Join Geometry Recursive to New
+`オブジェクトモードで右クリック → Auto Merge → Join Geometry Recursive to New`  
+新規の空メッシュオブジェクトを作成し、選択中の全オブジェクトとその再帰的子オブジェクトをJoin Geometryノードで結合します。  
+
+- **特徴**
+  - 新規オブジェクトへの非破壊的結合
+  - 選択オブジェクトの子階層も自動的に含める
+  - 元のオブジェクトは完全に保持される
+  - 複雑な階層構造の結合に最適
+  - 作成するオブジェクト名を指定可能（デフォルト: "JoinedGeometry_Recursive"）
+
 ### ◇オブジェクトのプロパティによる特殊処理
 各種プロパティは  
 `オブジェクトモードの右クリックメニュー > Auto Merge`  

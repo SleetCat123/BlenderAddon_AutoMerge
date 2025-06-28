@@ -58,6 +58,8 @@ else:
         op_merge_selections,
         op_join_geometry,
         op_join_geometry_recursive,
+        op_join_geometry_to_new,
+        op_join_geometry_recursive_to_new,
         op_update_join_geometry,
     )
     from .scripts.variants import (
@@ -87,6 +89,8 @@ classes = [
     op_merge_selections,
     op_join_geometry,
     op_join_geometry_recursive,
+    op_join_geometry_to_new,
+    op_join_geometry_recursive_to_new,
     op_update_join_geometry,
 
     panel_variants,

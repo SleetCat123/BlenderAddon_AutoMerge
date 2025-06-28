@@ -7,7 +7,6 @@
 """
 
 import bpy
-from bpy.props import StringProperty
 from .. import consts
 from .join_geometry_base import JoinGeometryBase
 
@@ -19,17 +18,7 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator, JoinGeometryBa
     bl_description = "Join all selected objects to active object using Geometry Nodes Join Geometry"
     bl_options = {'REGISTER', 'UNDO'}
 
-    node_group_name: StringProperty(
-        name="Node Group Name",
-        default=consts.JOIN_GEOMETRY_NODE_GROUP_NAME,
-        description="Name of the Geometry Nodes node group"
-    )
 
-    modifier_name: StringProperty(
-        name="Modifier Name", 
-        default=consts.JOIN_GEOMETRY_MODIFIER_NAME,
-        description="Name of the modifier to create"
-    )
 
 
 
@@ -42,16 +31,12 @@ class OBJECT_OT_automerge_join_geometry_nodes(bpy.types.Operator, JoinGeometryBa
             and len(context.selected_objects) > 1
         )
 
-    def draw(self, context):
-        """オペレーターのUI描画"""
-        layout = self.layout
-        layout.prop(self, "node_group_name")
-        layout.prop(self, "modifier_name")
+
 
     def execute(self, context):
         """オペレーターのメイン処理"""
         # 共通基盤クラスを初期化
-        JoinGeometryBase.__init__(self, self.node_group_name, self.modifier_name)
+        JoinGeometryBase.__init__(self, consts.JOIN_GEOMETRY_NODE_GROUP_NAME, consts.JOIN_GEOMETRY_MODIFIER_NAME)
         
         active_obj = context.active_object
         selected_objects = [obj for obj in context.selected_objects if obj != active_obj and obj.type == 'MESH']
@@ -73,13 +58,7 @@ translations_dict = {
         # オペレーター説明
         ("*", "Join all selected objects to active object using Geometry Nodes Join Geometry"): "選択中の全オブジェクトをアクティブオブジェクトにGeometry NodesでJoin Geometryします",
         
-        # プロパティ名
-        ("*", "Node Group Name"): "ノードグループ名",
-        ("*", "Modifier Name"): "モディファイア名",
-        
-        # プロパティ説明
-        ("*", "Name of the Geometry Nodes node group"): "Geometry Nodesのノードグループ名",
-        ("*", "Name of the modifier to create"): "作成するモディファイア名",
+
         
         # エラー・警告メッセージ
         ("*", "Active object is not a mesh object"): "アクティブオブジェクトがメッシュオブジェクトではありません",

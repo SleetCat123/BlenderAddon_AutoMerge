@@ -6,7 +6,6 @@
 """
 
 import bpy
-from bpy.props import StringProperty
 from .. import consts
 from ..funcs.utils import func_object_utils
 from .join_geometry_base import JoinGeometryBase
@@ -19,17 +18,7 @@ class OBJECT_OT_automerge_update_join_geometry(bpy.types.Operator, JoinGeometryB
     bl_description = "Update Join Geometry nodes to reflect current state of target objects and their children"
     bl_options = {'REGISTER', 'UNDO'}
 
-    node_group_name: StringProperty(
-        name="Node Group Name",
-        default=consts.JOIN_GEOMETRY_NODE_GROUP_NAME_RECURSIVE,
-        description="Name of the Geometry Nodes node group"
-    )
 
-    modifier_name: StringProperty(
-        name="Modifier Name", 
-        default=consts.JOIN_GEOMETRY_MODIFIER_NAME_RECURSIVE,
-        description="Name of the modifier to create"
-    )
 
 
 
@@ -38,16 +27,12 @@ class OBJECT_OT_automerge_update_join_geometry(bpy.types.Operator, JoinGeometryB
         """実行可能条件: 選択オブジェクトの中にMESHタイプのオブジェクトが存在する"""
         return any(obj.type == 'MESH' for obj in context.selected_objects)
 
-    def draw(self, context):
-        """オペレーターのUI描画"""
-        layout = self.layout
-        layout.prop(self, "node_group_name")
-        layout.prop(self, "modifier_name")
+
 
     def execute(self, context):
         """オペレーターのメイン処理"""
         # 共通基盤クラスを初期化
-        JoinGeometryBase.__init__(self, self.node_group_name, self.modifier_name)
+        JoinGeometryBase.__init__(self, consts.JOIN_GEOMETRY_NODE_GROUP_NAME_RECURSIVE, consts.JOIN_GEOMETRY_MODIFIER_NAME_RECURSIVE)
         
         # 全選択オブジェクトのJoin Geometry Recursiveモディファイアを検索（再帰版のみが対象）
         target_modifier = None
@@ -173,13 +158,7 @@ translations_dict = {
         # オペレーター説明
         ("*", "Update Join Geometry nodes to reflect current state of target objects and their children"): "Join Geometryノードを対象オブジェクトとその子オブジェクトの現在の状態に更新します",
         
-        # プロパティ名
-        ("*", "Node Group Name"): "ノードグループ名",
-        ("*", "Modifier Name"): "モディファイア名",
-        
-        # プロパティ説明
-        ("*", "Name of the Geometry Nodes node group"): "Geometry Nodesのノードグループ名",
-        ("*", "Name of the modifier to create"): "作成するモディファイア名",
+
         
         # エラー・警告メッセージ
         ("*", "No Join Geometry Recursive modifier found in selected objects"): "選択オブジェクトにJoin Geometry Recursiveモディファイアが見つかりません",

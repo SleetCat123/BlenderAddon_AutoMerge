@@ -68,9 +68,40 @@ class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
         op_abs.transform_space_mode = 'ABSOLUTE'
         
         self.layout.operator(op_join_geometry_to_new.OBJECT_OT_automerge_join_geometry_to_new.bl_idname)
+        
+        # Join Geometry to Newクイックアクセス版
+        col = self.layout.column(align=True)
+        op_to_new_rel = col.operator(op_join_geometry_to_new.OBJECT_OT_automerge_join_geometry_to_new.bl_idname, 
+                                    text="└ to New（相対位置）")
+        op_to_new_rel.transform_space_mode = 'RELATIVE'
+        
+        op_to_new_abs = col.operator(op_join_geometry_to_new.OBJECT_OT_automerge_join_geometry_to_new.bl_idname, 
+                                    text="└ to New（絶対位置）")
+        op_to_new_abs.transform_space_mode = 'ABSOLUTE'
         self.layout.separator()
         self.layout.operator(op_join_geometry_recursive.OBJECT_OT_automerge_join_geometry_recursive.bl_idname)
+        
+        # Join Geometry Recursiveクイックアクセス版
+        col = self.layout.column(align=True)
+        op_rec_rel = col.operator(op_join_geometry_recursive.OBJECT_OT_automerge_join_geometry_recursive.bl_idname, 
+                                 text="└ Recursive（相対位置）")
+        op_rec_rel.transform_space_mode = 'RELATIVE'
+        
+        op_rec_abs = col.operator(op_join_geometry_recursive.OBJECT_OT_automerge_join_geometry_recursive.bl_idname, 
+                                 text="└ Recursive（絶対位置）")
+        op_rec_abs.transform_space_mode = 'ABSOLUTE'
+        
         self.layout.operator(op_join_geometry_recursive_to_new.OBJECT_OT_automerge_join_geometry_recursive_to_new.bl_idname)
+        
+        # Join Geometry Recursive to Newクイックアクセス版
+        col = self.layout.column(align=True)
+        op_rec_to_new_rel = col.operator(op_join_geometry_recursive_to_new.OBJECT_OT_automerge_join_geometry_recursive_to_new.bl_idname, 
+                                        text="└ Recursive to New（相対位置）")
+        op_rec_to_new_rel.transform_space_mode = 'RELATIVE'
+        
+        op_rec_to_new_abs = col.operator(op_join_geometry_recursive_to_new.OBJECT_OT_automerge_join_geometry_recursive_to_new.bl_idname, 
+                                        text="└ Recursive to New（絶対位置）")
+        op_rec_to_new_abs.transform_space_mode = 'ABSOLUTE'
         
         # Update Join Geometry基本機能
         self.layout.operator(op_update_join_geometry.OBJECT_OT_automerge_update_join_geometry.bl_idname)

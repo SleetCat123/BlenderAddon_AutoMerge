@@ -6,7 +6,7 @@
 """
 
 import bpy
-from bpy.props import StringProperty
+from bpy.props import StringProperty, EnumProperty
 
 
 class OBJECT_OT_automerge_join_geometry_recursive_to_new(bpy.types.Operator):
@@ -15,6 +15,16 @@ class OBJECT_OT_automerge_join_geometry_recursive_to_new(bpy.types.Operator):
     bl_label = "Join Geometry Recursive to New"
     bl_description = "Join all selected objects and their recursive children to new empty mesh object using Geometry Nodes Join Geometry"
     bl_options = {'REGISTER', 'UNDO'}
+
+    transform_space_mode: EnumProperty(
+        name="Transform Space",
+        description="Choose coordinate system for object positioning",
+        items=[
+            ('RELATIVE', "Relative", "Objects follow their current positions (dynamic)"),
+            ('ABSOLUTE', "Absolute", "Objects locked to creation-time positions (static)")
+        ],
+        default='RELATIVE'
+    )
 
 
 
@@ -64,11 +74,13 @@ class OBJECT_OT_automerge_join_geometry_recursive_to_new(bpy.types.Operator):
         # 新規オブジェクトをアクティブに設定
         context.view_layer.objects.active = new_obj
 
-        # 既存のJoin Geometry Recursiveオペレータを呼び出し
+        # 既存のJoin Geometry Recursiveオペレータを呼び出し（座標システム指定）
         try:
-            result = bpy.ops.object.automerge_join_geometry_recursive()
+            result = bpy.ops.object.automerge_join_geometry_recursive(transform_space_mode=self.transform_space_mode)
             if result == {'FINISHED'}:
-                success_message = f"Join Geometry Recursive completed - New object: {new_obj.name}"
+                # 座標システム情報をメッセージに追加
+                mode_text = "（絶対位置）" if self.transform_space_mode == 'ABSOLUTE' else "（相対位置）"
+                success_message = f"Join Geometry Recursive completed - New object: {new_obj.name}{mode_text}"
                 self.report({'INFO'}, success_message)
                 print(f"Join Geometry Recursive to New: Successfully created {new_obj.name} with recursive join of {len(selected_mesh_objects)} selected objects")
                 return {'FINISHED'}
@@ -90,6 +102,18 @@ class OBJECT_OT_automerge_join_geometry_recursive_to_new(bpy.types.Operator):
                 pass
             self.report({'ERROR'}, f"Error calling Join Geometry Recursive: {str(e)}")
             return {'CANCELLED'}
+    
+    def draw(self, context):
+        """プロパティパネル表示用"""
+        layout = self.layout
+        
+        layout.prop(self, "transform_space_mode")
+        
+        # 絶対位置モード時の説明
+        if self.transform_space_mode == 'ABSOLUTE':
+            box = layout.box()
+            box.label(text="絶対位置モード:")
+            box.label(text="オブジェクトを移動しても結合位置は固定されます")
 
 
 # 翻訳辞書
@@ -99,6 +123,14 @@ translations_dict = {
         ("*", "Join all selected objects and their recursive children to new empty mesh object using Geometry Nodes"): "選択中の全オブジェクトとその再帰的子オブジェクトを新規空メッシュオブジェクトにGeometry NodesでJoin Geometryします",
         
 
+        
+        # プロパティの翻訳
+        ("*", "Transform Space"): "座標システム",
+        ("*", "Choose coordinate system for object positioning"): "オブジェクトの位置制御方法を選択",
+        ("*", "Relative"): "相対位置",
+        ("*", "Objects follow their current positions (dynamic)"): "オブジェクトの移動に結合結果が追従（動的）",
+        ("*", "Absolute"): "絶対位置",
+        ("*", "Objects locked to creation-time positions (static)"): "作成時の位置に固定（静的）",
         
         # エラー・警告メッセージ
         ("*", "No mesh objects selected"): "メッシュオブジェクトが選択されていません",

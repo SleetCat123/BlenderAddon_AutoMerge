@@ -153,9 +153,9 @@ class JoinGeometryBase:
             
             # 絶対位置モードの場合、Transform Geometryノードを追加してオフセット調整
             if transform_space == 'ABSOLUTE':
-                # Transform Geometryノード作成
+                # Transform Geometryノード作成（縦長なので少し下に配置）
                 transform_node = nodes.new("GeometryNodeTransform")
-                transform_node.location = (-50, y_offset)
+                transform_node.location = (-50, y_offset - 50)
                 transform_node.name = f"Transform_{obj.name}"
                 
                 # オフセット値（位置・回転・スケール）を取得・設定
@@ -176,8 +176,11 @@ class JoinGeometryBase:
                 links.new(obj_info_node.outputs["Geometry"], join_node.inputs["Geometry"])
             
             
-            # 次のノードの位置を調整
-            y_offset -= 150
+            # 次のノードの位置を調整（Transform Geometryノードの高さを考慮）
+            if transform_space == 'ABSOLUTE':
+                y_offset -= 250  # Transform Geometryノードは縦長なので大きめの間隔
+            else:
+                y_offset -= 150  # 相対位置モードは従来通り
 
         # レイアウト調整
         if output_node:

@@ -1,5 +1,12 @@
 ## ◆更新履歴
 ### 2025-07-04 v4.0.0
+- feat: Geometry NodesによるJoin Geometry機能を新規追加
+  - Join Geometry Nodes: 選択オブジェクトをアクティブオブジェクトに非破壊結合
+  - Join Geometry to New: 選択オブジェクトを新規オブジェクトに結合
+  - Join Geometry Recursive: 再帰的子オブジェクトも含めて結合
+  - Join Geometry Recursive to New: 再帰的子オブジェクトを新規オブジェクトに結合
+  - Update Join Geometry: 既存Join Geometryの対象オブジェクトを更新
+  - Armatureモディファイアの自動コピー機能
 - feat: Join Geometry座標システム選択機能を実装
   - 相対位置モード（従来）: オブジェクトの移動に結合結果が追従
   - 絶対位置モード（新機能）: 作成時の位置に結合位置を固定

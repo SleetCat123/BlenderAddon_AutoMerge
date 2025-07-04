@@ -54,12 +54,38 @@ class VIEW3D_MT_object_specials_auto_merge(bpy.types.Menu):
 
         self.layout.separator()
         
+        # Join Geometry基本機能
         self.layout.operator(op_join_geometry.OBJECT_OT_automerge_join_geometry_nodes.bl_idname)
+        
+        # Join Geometryクイックアクセス版
+        col = self.layout.column(align=True)
+        op_rel = col.operator(op_join_geometry.OBJECT_OT_automerge_join_geometry_nodes.bl_idname, 
+                             text="└ Join Geometry（相対位置）")
+        op_rel.transform_space_mode = 'RELATIVE'
+        
+        op_abs = col.operator(op_join_geometry.OBJECT_OT_automerge_join_geometry_nodes.bl_idname, 
+                             text="└ Join Geometry（絶対位置）")
+        op_abs.transform_space_mode = 'ABSOLUTE'
+        
         self.layout.operator(op_join_geometry_to_new.OBJECT_OT_automerge_join_geometry_to_new.bl_idname)
         self.layout.separator()
         self.layout.operator(op_join_geometry_recursive.OBJECT_OT_automerge_join_geometry_recursive.bl_idname)
         self.layout.operator(op_join_geometry_recursive_to_new.OBJECT_OT_automerge_join_geometry_recursive_to_new.bl_idname)
+        
+        # Update Join Geometry基本機能
         self.layout.operator(op_update_join_geometry.OBJECT_OT_automerge_update_join_geometry.bl_idname)
+        
+        # Update Join Geometryクイックアクセス版
+        col = self.layout.column(align=True)
+        op_keep = col.operator(op_update_join_geometry.OBJECT_OT_automerge_update_join_geometry.bl_idname,
+                              text="└ Update（位置保持）")
+        op_keep.update_offsets = False
+        op_keep.change_transform_mode = 'KEEP'
+        
+        op_update = col.operator(op_update_join_geometry.OBJECT_OT_automerge_update_join_geometry.bl_idname,
+                                text="└ Update（位置更新）")
+        op_update.update_offsets = True
+        op_update.change_transform_mode = 'KEEP'
 
         self.layout.separator()
 

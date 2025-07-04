@@ -6,6 +6,7 @@
 """
 
 import bpy
+from bpy.props import BoolProperty, EnumProperty
 from .. import consts
 from ..funcs.utils import func_object_utils
 from .join_geometry_base import JoinGeometryBase
@@ -17,6 +18,23 @@ class OBJECT_OT_automerge_update_join_geometry(bpy.types.Operator, JoinGeometryB
     bl_label = "Update Join Geometry"
     bl_description = "Update Join Geometry nodes to reflect current state of target objects and their children"
     bl_options = {'REGISTER', 'UNDO'}
+
+    update_offsets: BoolProperty(
+        name="Update Offsets",
+        description="Update stored world coordinates to current object positions",
+        default=False
+    )
+    
+    change_transform_mode: EnumProperty(
+        name="Transform System Change",
+        description="Change existing coordinate system",
+        items=[
+            ('KEEP', "Keep Current", "Maintain current coordinate system"),
+            ('TO_RELATIVE', "To Relative", "Change to relative coordinate system"),
+            ('TO_ABSOLUTE', "To Absolute", "Change to absolute coordinate system")
+        ],
+        default='KEEP'
+    )
 
 
 
@@ -112,6 +130,27 @@ class OBJECT_OT_automerge_update_join_geometry(bpy.types.Operator, JoinGeometryB
         for obj in sorted(all_target_objects, key=lambda x: x.name):
             print(f"  - {obj.name}")
         
+        # 現在の座標システムを検出
+        current_transform_space = self.detect_transform_space(target_modifier)
+        print(f"Update Join Geometry: Current transform space = {current_transform_space}")
+        
+        # 座標システム変更の処理
+        if self.change_transform_mode == 'TO_RELATIVE':
+            new_transform_space = 'RELATIVE'
+            print("Update Join Geometry: Changing to RELATIVE transform space")
+        elif self.change_transform_mode == 'TO_ABSOLUTE':
+            new_transform_space = 'ABSOLUTE'
+            print("Update Join Geometry: Changing to ABSOLUTE transform space")
+        else:  # 'KEEP'
+            new_transform_space = current_transform_space
+            print(f"Update Join Geometry: Keeping current transform space ({current_transform_space})")
+        
+        # オフセット更新処理（絶対位置モード時のみ）
+        if new_transform_space == 'ABSOLUTE' and self.update_offsets:
+            print("Update Join Geometry: Updating object offsets to current positions")
+            for obj in all_target_objects:
+                self.update_object_offset(obj)
+        
         # 現在の設定と新しい設定の比較
         current_objects_set = set(current_target_objects)
         new_objects_set = set(all_target_objects)
@@ -132,11 +171,12 @@ class OBJECT_OT_automerge_update_join_geometry(bpy.types.Operator, JoinGeometryB
         if not added_objects and not removed_objects:
             print("Update Join Geometry: No changes detected in object hierarchy")
         
-        # 共通基盤クラスのメソッドを使用してJoin Geometry更新実行
+        # 共通基盤クラスのメソッドを使用してJoin Geometry更新実行（座標システム指定）
         result, message = self.execute_join_geometry(
             target_obj, 
             all_target_objects, 
-            "Update Join Geometry"
+            "Update Join Geometry",
+            new_transform_space
         )
         
         if result == {'FINISHED'}:
@@ -144,12 +184,45 @@ class OBJECT_OT_automerge_update_join_geometry(bpy.types.Operator, JoinGeometryB
             change_info = ""
             if added_objects or removed_objects:
                 change_info = f" (Added: {len(added_objects)}, Removed: {len(removed_objects)})"
-            detailed_message = f"{message}{change_info}"
+            
+            # 座標システム情報を追加
+            mode_text = "（絶対位置）" if new_transform_space == 'ABSOLUTE' else "（相対位置）"
+            
+            # オフセット更新情報を追加
+            offset_info = ""
+            if new_transform_space == 'ABSOLUTE':
+                if self.update_offsets:
+                    offset_info = "（位置更新）"
+                else:
+                    offset_info = "（位置保持）"
+            
+            detailed_message = f"{message}{change_info}{mode_text}{offset_info}"
             self.report({'INFO'}, detailed_message)
         else:
             self.report({'ERROR'}, message)
         
         return result
+    
+    def draw(self, context):
+        """プロパティパネル表示用"""
+        layout = self.layout
+        
+        layout.prop(self, "change_transform_mode")
+        
+        # 座標システム変更時の詳細設定
+        if self.change_transform_mode != 'KEEP':
+            box = layout.box()
+            box.label(text="座標システム変更:")
+            if self.change_transform_mode == 'TO_ABSOLUTE':
+                box.prop(self, "update_offsets")
+                if self.update_offsets:
+                    box.label(text="現在の位置を新しい基準位置として設定します")
+        else:
+            # 現状維持時はオフセット更新のみ表示
+            layout.prop(self, "update_offsets")
+            if self.update_offsets:
+                box = layout.box()
+                box.label(text="絶対位置モードの場合のみ有効")
 
 
 # 翻訳辞書
@@ -159,6 +232,18 @@ translations_dict = {
         ("*", "Update Join Geometry nodes to reflect current state of target objects and their children"): "Join Geometryノードを対象オブジェクトとその子オブジェクトの現在の状態に更新します",
         
 
+        
+        # プロパティの翻訳
+        ("*", "Update Offsets"): "オフセット更新",
+        ("*", "Update stored world coordinates to current object positions"): "保存されたワールド座標を現在のオブジェクト位置に更新",
+        ("*", "Transform System Change"): "座標システム変更",
+        ("*", "Change existing coordinate system"): "既存の座標システムを変更",
+        ("*", "Keep Current"): "現状維持",
+        ("*", "Maintain current coordinate system"): "現在の座標システムを維持",
+        ("*", "To Relative"): "相対位置に変更",
+        ("*", "Change to relative coordinate system"): "相対位置システムに変更",
+        ("*", "To Absolute"): "絶対位置に変更",
+        ("*", "Change to absolute coordinate system"): "絶対位置システムに変更",
         
         # エラー・警告メッセージ
         ("*", "No Join Geometry Recursive modifier found in selected objects"): "選択オブジェクトにJoin Geometry Recursiveモディファイアが見つかりません",

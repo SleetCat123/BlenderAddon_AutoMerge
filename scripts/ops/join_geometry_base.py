@@ -10,6 +10,7 @@
 import bpy
 import traceback
 from bpy.props import StringProperty
+from mathutils import Vector
 from .. import consts
 
 
@@ -102,7 +103,7 @@ class JoinGeometryBase:
         links.new(input_node.outputs["Geometry"], join_node.inputs["Geometry"])
         links.new(join_node.outputs["Geometry"], output_node.inputs["Geometry"])
 
-    def setup_object_sockets(self, node_group, target_objects):
+    def setup_object_sockets(self, node_group, target_objects, transform_space='RELATIVE'):
         """対象オブジェクト用のソケットとノードを設定"""
         nodes = node_group.nodes
         links = node_group.links
@@ -148,12 +149,30 @@ class JoinGeometryBase:
             obj_info_node = nodes.new("GeometryNodeObjectInfo")
             obj_info_node.location = (-200, y_offset)
             obj_info_node.name = f"ObjectInfo_{obj.name}"
-            obj_info_node.transform_space = 'RELATIVE'  # 相対変換空間に設定
+            obj_info_node.transform_space = 'ABSOLUTE' if transform_space == 'ABSOLUTE' else 'RELATIVE'
             
-            # 接続
-            if input_node:
-                links.new(input_node.outputs[socket_name], obj_info_node.inputs["Object"])
-            links.new(obj_info_node.outputs["Geometry"], join_node.inputs["Geometry"])
+            # 絶対位置モードの場合、Transform Geometryノードを追加してオフセット調整
+            if transform_space == 'ABSOLUTE':
+                # Transform Geometryノード作成
+                transform_node = nodes.new("GeometryNodeTransform")
+                transform_node.location = (-50, y_offset)
+                transform_node.name = f"Transform_{obj.name}"
+                
+                # オフセット値を取得・設定
+                offset = self.get_or_store_object_offset(obj)
+                transform_node.inputs["Translation"].default_value = (-offset.x, -offset.y, -offset.z)
+                
+                # 接続: Object Info -> Transform -> Join Geometry
+                if input_node:
+                    links.new(input_node.outputs[socket_name], obj_info_node.inputs["Object"])
+                links.new(obj_info_node.outputs["Geometry"], transform_node.inputs["Geometry"])
+                links.new(transform_node.outputs["Geometry"], join_node.inputs["Geometry"])
+            else:
+                # 相対位置モード（従来通り）
+                if input_node:
+                    links.new(input_node.outputs[socket_name], obj_info_node.inputs["Object"])
+                links.new(obj_info_node.outputs["Geometry"], join_node.inputs["Geometry"])
+            
             
             # 次のノードの位置を調整
             y_offset -= 150
@@ -210,7 +229,7 @@ class JoinGeometryBase:
         except:
             pass
 
-    def execute_join_geometry(self, active_obj, target_objects, log_message: str = "Join Geometry"):
+    def execute_join_geometry(self, active_obj, target_objects, log_message: str = "Join Geometry", transform_space='RELATIVE'):
         """Join Geometry処理の実行（共通メイン処理）"""
         try:
             # アクティブオブジェクトがMESHタイプかどうか確認
@@ -232,8 +251,8 @@ class JoinGeometryBase:
             node_group = self.create_new_node_group()
             modifier.node_group = node_group
 
-            # オブジェクトソケットの設定
-            self.setup_object_sockets(node_group, valid_objects)
+            # オブジェクトソケットの設定（座標システム指定）
+            self.setup_object_sockets(node_group, valid_objects, transform_space)
             
             # モディファイアにオブジェクトを設定
             self.assign_objects_to_modifier(modifier, valid_objects)
@@ -327,4 +346,49 @@ class JoinGeometryBase:
             except:
                 pass
         
-        return target_objects 
+        return target_objects
+
+    def get_or_store_object_offset(self, obj):
+        """オブジェクトのワールド座標オフセットを取得または保存"""
+        offset_key_x = f"automerge_offset_x"
+        offset_key_y = f"automerge_offset_y"
+        offset_key_z = f"automerge_offset_z"
+        
+        # 既存のオフセット情報を確認
+        if (offset_key_x in obj and offset_key_y in obj and offset_key_z in obj):
+            # 既存のオフセットを返す
+            return Vector((
+                obj[offset_key_x],
+                obj[offset_key_y], 
+                obj[offset_key_z]
+            ))
+        else:
+            # 新規オフセットを現在のワールド座標で保存
+            world_location = obj.matrix_world.translation
+            obj[offset_key_x] = world_location.x
+            obj[offset_key_y] = world_location.y
+            obj[offset_key_z] = world_location.z
+            
+            print(f"新規オフセット保存: {obj.name} -> ({world_location.x:.3f}, {world_location.y:.3f}, {world_location.z:.3f})")
+            return world_location.copy()
+    
+    def update_object_offset(self, obj):
+        """オブジェクトのワールド座標オフセットを現在の位置で更新"""
+        world_location = obj.matrix_world.translation
+        obj[f"automerge_offset_x"] = world_location.x
+        obj[f"automerge_offset_y"] = world_location.y
+        obj[f"automerge_offset_z"] = world_location.z
+        
+        print(f"オフセット更新: {obj.name} -> ({world_location.x:.3f}, {world_location.y:.3f}, {world_location.z:.3f})")
+    
+    def detect_transform_space(self, modifier):
+        """モディファイアから現在の座標システムを検出"""
+        if not modifier.node_group:
+            return 'RELATIVE'
+        
+        # Transform Geometryノードの存在確認
+        for node in modifier.node_group.nodes:
+            if node.type == 'TRANSFORM_GEOMETRY':
+                return 'ABSOLUTE'
+        
+        return 'RELATIVE'

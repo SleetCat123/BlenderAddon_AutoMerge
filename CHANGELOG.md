@@ -1,4 +1,19 @@
 ## ◆更新履歴
+### 2025-07-04 v4.0.0
+- feat: Join Geometry座標システム選択機能を実装
+  - 相対位置モード（従来）: オブジェクトの移動に結合結果が追従
+  - 絶対位置モード（新機能）: 作成時の位置に結合位置を固定
+  - Transform Geometryノードによる自動オフセット調整システム
+- feat: 全Join Geometryオペレーターに座標システム対応を拡張
+  - Join Geometry Nodes, Join Geometry to New
+  - Join Geometry Recursive, Join Geometry Recursive to New
+  - Update Join Geometry（オフセット更新選択機能付き）
+- feat: クイックアクセスメニューを追加
+  - 各オペレーターで相対位置・絶対位置の直接選択が可能
+  - 既存メニュー構造に統合した使いやすいUI設計
+- improve: 完全な日本語対応とプロパティパネル表示を実装
+
+
 ### 2024-11-02 v3.1.0
 - remove: 名前に%AS%がついているモディファイアをシェイプキーとして適用する機能を削除。
 この機能を使用したい場合はShapeKeysUtilを導入して連携機能を使用してください。

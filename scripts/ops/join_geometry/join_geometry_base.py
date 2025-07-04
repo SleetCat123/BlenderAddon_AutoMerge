@@ -158,9 +158,11 @@ class JoinGeometryBase:
                 transform_node.location = (-50, y_offset)
                 transform_node.name = f"Transform_{obj.name}"
                 
-                # オフセット値を取得・設定
-                offset = self.get_or_store_object_offset(obj)
-                transform_node.inputs["Translation"].default_value = (-offset.x, -offset.y, -offset.z)
+                # オフセット値（位置・回転・スケール）を取得・設定
+                location_offset, rotation_offset, scale_offset = self.get_or_store_object_offset(obj)
+                transform_node.inputs["Translation"].default_value = (location_offset.x, location_offset.y, location_offset.z)
+                transform_node.inputs["Rotation"].default_value = (rotation_offset.x, rotation_offset.y, rotation_offset.z)
+                transform_node.inputs["Scale"].default_value = (scale_offset.x, scale_offset.y, scale_offset.z)
                 
                 # 接続: Object Info -> Transform -> Join Geometry
                 if input_node:
@@ -349,37 +351,91 @@ class JoinGeometryBase:
         return target_objects
 
     def get_or_store_object_offset(self, obj):
-        """オブジェクトのワールド座標オフセットを取得または保存"""
+        """オブジェクトのワールド座標オフセット（位置・回転・スケール）を取得または保存"""
+        # 位置オフセットキー
         offset_key_x = f"automerge_offset_x"
         offset_key_y = f"automerge_offset_y"
         offset_key_z = f"automerge_offset_z"
         
+        # 回転オフセットキー
+        rotation_key_x = f"automerge_rotation_x"
+        rotation_key_y = f"automerge_rotation_y"
+        rotation_key_z = f"automerge_rotation_z"
+        
+        # スケールオフセットキー
+        scale_key_x = f"automerge_scale_x"
+        scale_key_y = f"automerge_scale_y"
+        scale_key_z = f"automerge_scale_z"
+        
         # 既存のオフセット情報を確認
-        if (offset_key_x in obj and offset_key_y in obj and offset_key_z in obj):
+        has_position = (offset_key_x in obj and offset_key_y in obj and offset_key_z in obj)
+        has_rotation = (rotation_key_x in obj and rotation_key_y in obj and rotation_key_z in obj)
+        has_scale = (scale_key_x in obj and scale_key_y in obj and scale_key_z in obj)
+        
+        if has_position and has_rotation and has_scale:
             # 既存のオフセットを返す
-            return Vector((
+            location = Vector((
                 obj[offset_key_x],
                 obj[offset_key_y], 
                 obj[offset_key_z]
             ))
+            rotation = Vector((
+                obj[rotation_key_x],
+                obj[rotation_key_y],
+                obj[rotation_key_z]
+            ))
+            scale = Vector((
+                obj[scale_key_x],
+                obj[scale_key_y],
+                obj[scale_key_z]
+            ))
+            return location, rotation, scale
         else:
             # 新規オフセットを現在のワールド座標で保存
             world_location = obj.matrix_world.translation
+            world_rotation = obj.matrix_world.to_euler()
+            world_scale = obj.matrix_world.to_scale()
+            
+            # 位置の保存
             obj[offset_key_x] = world_location.x
             obj[offset_key_y] = world_location.y
             obj[offset_key_z] = world_location.z
             
-            print(f"新規オフセット保存: {obj.name} -> ({world_location.x:.3f}, {world_location.y:.3f}, {world_location.z:.3f})")
-            return world_location.copy()
+            # 回転の保存
+            obj[rotation_key_x] = world_rotation.x
+            obj[rotation_key_y] = world_rotation.y
+            obj[rotation_key_z] = world_rotation.z
+            
+            # スケールの保存
+            obj[scale_key_x] = world_scale.x
+            obj[scale_key_y] = world_scale.y
+            obj[scale_key_z] = world_scale.z
+            
+            print(f"新規オフセット保存: {obj.name} -> 位置({world_location.x:.3f}, {world_location.y:.3f}, {world_location.z:.3f}) 回転({world_rotation.x:.3f}, {world_rotation.y:.3f}, {world_rotation.z:.3f}) スケール({world_scale.x:.3f}, {world_scale.y:.3f}, {world_scale.z:.3f})")
+            return world_location.copy(), world_rotation.copy(), world_scale.copy()
     
     def update_object_offset(self, obj):
-        """オブジェクトのワールド座標オフセットを現在の位置で更新"""
+        """オブジェクトのワールド座標オフセット（位置・回転・スケール）を現在の位置で更新"""
         world_location = obj.matrix_world.translation
+        world_rotation = obj.matrix_world.to_euler()
+        world_scale = obj.matrix_world.to_scale()
+        
+        # 位置の更新
         obj[f"automerge_offset_x"] = world_location.x
         obj[f"automerge_offset_y"] = world_location.y
         obj[f"automerge_offset_z"] = world_location.z
         
-        print(f"オフセット更新: {obj.name} -> ({world_location.x:.3f}, {world_location.y:.3f}, {world_location.z:.3f})")
+        # 回転の更新
+        obj[f"automerge_rotation_x"] = world_rotation.x
+        obj[f"automerge_rotation_y"] = world_rotation.y
+        obj[f"automerge_rotation_z"] = world_rotation.z
+        
+        # スケールの更新
+        obj[f"automerge_scale_x"] = world_scale.x
+        obj[f"automerge_scale_y"] = world_scale.y
+        obj[f"automerge_scale_z"] = world_scale.z
+        
+        print(f"オフセット更新: {obj.name} -> 位置({world_location.x:.3f}, {world_location.y:.3f}, {world_location.z:.3f}) 回転({world_rotation.x:.3f}, {world_rotation.y:.3f}, {world_rotation.z:.3f}) スケール({world_scale.x:.3f}, {world_scale.y:.3f}, {world_scale.z:.3f})")
     
     def detect_transform_space(self, modifier):
         """モディファイアから現在の座標システムを検出"""

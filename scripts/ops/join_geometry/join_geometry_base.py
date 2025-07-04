@@ -149,7 +149,7 @@ class JoinGeometryBase:
             obj_info_node = nodes.new("GeometryNodeObjectInfo")
             obj_info_node.location = (-200, y_offset)
             obj_info_node.name = f"ObjectInfo_{obj.name}"
-            obj_info_node.transform_space = 'ABSOLUTE' if transform_space == 'ABSOLUTE' else 'RELATIVE'
+            obj_info_node.transform_space = 'ORIGINAL' if transform_space == 'ABSOLUTE' else 'RELATIVE'
             
             # 絶対位置モードの場合、Transform Geometryノードを追加してオフセット調整
             if transform_space == 'ABSOLUTE':

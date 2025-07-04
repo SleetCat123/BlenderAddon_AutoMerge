@@ -1,24 +1,27 @@
 ## ◆更新履歴
 ### 2025-07-04 v4.0.0
-- feat: Geometry NodesによるJoin Geometry機能を新規追加
+- feat: Geometry NodesによるJoin Geometry機能を新規実装
   - Join Geometry Nodes: 選択オブジェクトをアクティブオブジェクトに非破壊結合
-  - Join Geometry to New: 選択オブジェクトを新規オブジェクトに結合
+  - Join Geometry to New: 選択オブジェクトを新規空メッシュオブジェクトに結合
   - Join Geometry Recursive: 再帰的子オブジェクトも含めて結合
   - Join Geometry Recursive to New: 再帰的子オブジェクトを新規オブジェクトに結合
   - Update Join Geometry: 既存Join Geometryの対象オブジェクトを更新
-  - Armatureモディファイアの自動コピー機能
+  - Join対象オブジェクトからArmatureモディファイアを自動コピー
+  - Blender 2.92以降との互換性対応（ソケット作成とオブジェクト割り当て処理をバージョン対応）
 - feat: Join Geometry座標システム選択機能を実装
-  - 相対位置モード（従来）: オブジェクトの移動に結合結果が追従
-  - 絶対位置モード（新機能）: 作成時の位置に結合位置を固定
-  - Transform Geometryノードによる自動オフセット調整システム
-- feat: 全Join Geometryオペレーターに座標システム対応を拡張
-  - Join Geometry Nodes, Join Geometry to New
-  - Join Geometry Recursive, Join Geometry Recursive to New
-  - Update Join Geometry（オフセット更新選択機能付き）
-- feat: クイックアクセスメニューを追加
-  - 各オペレーターで相対位置・絶対位置の直接選択が可能
-  - 既存メニュー構造に統合した使いやすいUI設計
-- improve: 完全な日本語対応とプロパティパネル表示を実装
+  - 相対位置モード: オブジェクトの移動に結合結果が追従
+  - 絶対位置モード: 作成時の位置に結合位置を固定
+  - Transform Geometryノードによる位置調整システム
+  - Updateオペレーターでオフセット更新選択機能
+  - メニューに相対位置・絶対位置事前設定版を追加
+  - 日本語翻訳対応
+- feat: 新規オブジェクト名の自動決定機能
+  - 単一オブジェクト選択時: 「{オブジェクト名}_Joined」
+  - 複数オブジェクト選択時: 「JoinedGeometry」
+- add: MeshDeformUtilsとの連携機能
+- fix: シェイプキーが無いオブジェクトでのエラーを修正
+- improve: メニューの整理とセパレーター追加
+- refactor: Join Geometry系オペレーターをサブディレクトリに整理
 
 
 ### 2024-11-02 v3.1.0

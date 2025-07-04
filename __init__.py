@@ -20,7 +20,7 @@ from .scripts.funcs.utils import func_package_utils
 bl_info = {
     "name": "AutoMerge",
     "author": "@sleetcat123(Twitter)",
-    "version": (3, 1, 0),
+    "version": (4, 0, 0),
     "blender": (2, 80, 0),
     "location": "Menu > AutoMerge",
     "description": "Merge Objects.",

@@ -20,6 +20,8 @@ import bpy
 from ..ops import (
     op_merge_children,
     op_merge_selections,
+)
+from ..ops.join_geometry import (
     op_join_geometry,
     op_join_geometry_recursive,
     op_join_geometry_to_new,

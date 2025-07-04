@@ -8,8 +8,8 @@
 
 import bpy
 from bpy.props import EnumProperty
-from .. import consts
-from ..funcs.utils import func_object_utils
+from ... import consts
+from ...funcs.utils import func_object_utils
 from .join_geometry_base import JoinGeometryBase
 
 

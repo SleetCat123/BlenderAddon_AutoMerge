@@ -11,7 +11,7 @@ import bpy
 import traceback
 from bpy.props import StringProperty
 from mathutils import Vector
-from .. import consts
+from ... import consts
 
 
 class JoinGeometryBase:
